@@ -49,7 +49,7 @@ def suction_speed(trial_boxes, video_width):
     return distance.mean()
 
 
-def blood_shape(early_blood):
+def blood_shape(early_blood, window=WINDOW):
     """How the blood changes over the window, not just its average:
     the worst moment, whether it's rising or falling, and where it ends up."""
     rows = []
@@ -61,7 +61,7 @@ def blood_shape(early_blood):
             "trial_id": trial_id,
             "blood_max": b["blood_frac"].max(),
             "blood_trend": trend,
-            "blood_late": b.loc[b["frame_number"] > WINDOW - 15, "blood_frac"].mean(),
+            "blood_late": b.loc[b["frame_number"] > window - 15, "blood_frac"].mean(),
         })
     return pd.DataFrame(rows).fillna(0)
 
@@ -93,9 +93,10 @@ def trial_features(trial_boxes, video_width):
     }
 
 
-def build_feature_table():
+def build_feature_table(window=WINDOW, start=0):
+    """One row per trial, using video from second `start` up to second `window`."""
     boxes = load_boxes()
-    early = boxes[boxes["frame_number"] <= WINDOW]
+    early = boxes[(boxes["frame_number"] > start) & (boxes["frame_number"] <= window)]
     outcomes = pd.read_csv("data/socal_outcomes.csv")
 
     # Video width per trial. A few trials don't list it; most videos are 1920 wide.
@@ -112,11 +113,15 @@ def build_feature_table():
     blood_path = "data/blood_coverage.csv"
     if os.path.exists(blood_path):
         blood = pd.read_csv(blood_path)
-        early_blood = blood[blood["frame_number"] <= WINDOW]
+        early_blood = blood[(blood["frame_number"] > start) & (blood["frame_number"] <= window)]
         # blood_mean: each trial's average blood coverage in the window.
         blood_mean = early_blood.groupby("trial_id")["blood_frac"].mean().reset_index(name="blood_mean")
         features = features.merge(blood_mean, on="trial_id")
-        features = features.merge(blood_shape(early_blood), on="trial_id")
+        features = features.merge(blood_shape(early_blood, window), on="trial_id")
+
+    # How long each video runs, so analyses can skip trials that ended before `window`.
+    lengths = boxes.groupby("trial_id")["frame_number"].max().rename("video_seconds")
+    features = features.merge(lengths, on="trial_id")
 
     return features.merge(outcomes[["trial_id", "blood_loss", "success"]], on="trial_id")
 

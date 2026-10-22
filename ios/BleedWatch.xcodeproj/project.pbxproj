@@ -1,0 +1,359 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		038117E0C0B6A955B28F1926 /* RiskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915A71389E9CE31EAB381D59 /* RiskModel.swift */; };
+		04D4AF46E579896AE437CCD0 /* SessionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8D0BA8A134B1878B66FC45 /* SessionEngine.swift */; };
+		2F12E8307ADA3A0423148B9A /* VideoSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9998CA930B77FEEDBC55DCFF /* VideoSources.swift */; };
+		31A9639FF70C24540705E3E5 /* sample_S103T2.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 39B675A8C230D06B6BE46787 /* sample_S103T2.mp4 */; };
+		53DECAE8174C3BAC6E92668D /* BleedWatchTools.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = E0F64944D48DD9656D4A218D /* BleedWatchTools.mlpackage */; };
+		62855251A8D5914F9B20401C /* risk_model.json in Resources */ = {isa = PBXBuildFile; fileRef = 0E17EF5F0776F62C1FD7622B /* risk_model.json */; };
+		70B8182BD0275310CFBB8184 /* sample_S814T1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 6E91D90EBA97B24F67A538A5 /* sample_S814T1.mp4 */; };
+		86977490ABFE6BB3F7245720 /* sample_S807T1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 423353BC07547B4F7EE47FF0 /* sample_S807T1.mp4 */; };
+		8C09E1E7D369A63B327B3BDB /* BleedWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7617B714989ACBEC546D1A7A /* BleedWatchApp.swift */; };
+		B7F6D7B09D64CBFC59D2FDD4 /* ScopeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D411066BBC4313AEEECBB003 /* ScopeView.swift */; };
+		ED312ADA71FF0835E6AA3071 /* FrameAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE5A35A28D2A9D555D50470 /* FrameAnalyzer.swift */; };
+		F1E98BE3B4E5E30DDAC5F4F3 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFE590CE27465552652ED1CA /* Models.swift */; };
+		F2651B43C67FB0E80F249B87 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38974AF424221CEA2F1F6D5F /* HomeView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0E17EF5F0776F62C1FD7622B /* risk_model.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = risk_model.json; sourceTree = "<group>"; };
+		1E8D0BA8A134B1878B66FC45 /* SessionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionEngine.swift; sourceTree = "<group>"; };
+		38974AF424221CEA2F1F6D5F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		39B675A8C230D06B6BE46787 /* sample_S103T2.mp4 */ = {isa = PBXFileReference; path = sample_S103T2.mp4; sourceTree = "<group>"; };
+		423353BC07547B4F7EE47FF0 /* sample_S807T1.mp4 */ = {isa = PBXFileReference; path = sample_S807T1.mp4; sourceTree = "<group>"; };
+		5EE5A35A28D2A9D555D50470 /* FrameAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameAnalyzer.swift; sourceTree = "<group>"; };
+		6E91D90EBA97B24F67A538A5 /* sample_S814T1.mp4 */ = {isa = PBXFileReference; path = sample_S814T1.mp4; sourceTree = "<group>"; };
+		7617B714989ACBEC546D1A7A /* BleedWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleedWatchApp.swift; sourceTree = "<group>"; };
+		915A71389E9CE31EAB381D59 /* RiskModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskModel.swift; sourceTree = "<group>"; };
+		9998CA930B77FEEDBC55DCFF /* VideoSources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSources.swift; sourceTree = "<group>"; };
+		D411066BBC4313AEEECBB003 /* ScopeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeView.swift; sourceTree = "<group>"; };
+		E0F64944D48DD9656D4A218D /* BleedWatchTools.mlpackage */ = {isa = PBXFileReference; path = BleedWatchTools.mlpackage; sourceTree = "<group>"; };
+		F3B630F1B73342EA58397C7D /* BleedWatch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BleedWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FFE590CE27465552652ED1CA /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		9AA2936C4ADF8B688F6D216C /* BleedWatch */ = {
+			isa = PBXGroup;
+			children = (
+				7617B714989ACBEC546D1A7A /* BleedWatchApp.swift */,
+				E0F64944D48DD9656D4A218D /* BleedWatchTools.mlpackage */,
+				5EE5A35A28D2A9D555D50470 /* FrameAnalyzer.swift */,
+				38974AF424221CEA2F1F6D5F /* HomeView.swift */,
+				FFE590CE27465552652ED1CA /* Models.swift */,
+				915A71389E9CE31EAB381D59 /* RiskModel.swift */,
+				D411066BBC4313AEEECBB003 /* ScopeView.swift */,
+				1E8D0BA8A134B1878B66FC45 /* SessionEngine.swift */,
+				9998CA930B77FEEDBC55DCFF /* VideoSources.swift */,
+				DE43FF0678944000E7EB2C15 /* Resources */,
+			);
+			path = BleedWatch;
+			sourceTree = "<group>";
+		};
+		BCA2F9D99F8045F9D19499BC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F3B630F1B73342EA58397C7D /* BleedWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CCBAB9D468E2188680A6EA5D = {
+			isa = PBXGroup;
+			children = (
+				9AA2936C4ADF8B688F6D216C /* BleedWatch */,
+				BCA2F9D99F8045F9D19499BC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DE43FF0678944000E7EB2C15 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0E17EF5F0776F62C1FD7622B /* risk_model.json */,
+				39B675A8C230D06B6BE46787 /* sample_S103T2.mp4 */,
+				423353BC07547B4F7EE47FF0 /* sample_S807T1.mp4 */,
+				6E91D90EBA97B24F67A538A5 /* sample_S814T1.mp4 */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9B1FD759244D9C33778D072B /* BleedWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 342BEEB1168513828C496205 /* Build configuration list for PBXNativeTarget "BleedWatch" */;
+			buildPhases = (
+				5915C16894E8ED2E155EAB07 /* Sources */,
+				079ED209121D18C5CFAD5C96 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BleedWatch;
+			packageProductDependencies = (
+			);
+			productName = BleedWatch;
+			productReference = F3B630F1B73342EA58397C7D /* BleedWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B8D7A64800C5A67E9E788181 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 956B890195D7EA08CC0AF2E8 /* Build configuration list for PBXProject "BleedWatch" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = CCBAB9D468E2188680A6EA5D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BCA2F9D99F8045F9D19499BC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9B1FD759244D9C33778D072B /* BleedWatch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		079ED209121D18C5CFAD5C96 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62855251A8D5914F9B20401C /* risk_model.json in Resources */,
+				31A9639FF70C24540705E3E5 /* sample_S103T2.mp4 in Resources */,
+				86977490ABFE6BB3F7245720 /* sample_S807T1.mp4 in Resources */,
+				70B8182BD0275310CFBB8184 /* sample_S814T1.mp4 in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5915C16894E8ED2E155EAB07 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8C09E1E7D369A63B327B3BDB /* BleedWatchApp.swift in Sources */,
+				53DECAE8174C3BAC6E92668D /* BleedWatchTools.mlpackage in Sources */,
+				ED312ADA71FF0835E6AA3071 /* FrameAnalyzer.swift in Sources */,
+				F2651B43C67FB0E80F249B87 /* HomeView.swift in Sources */,
+				F1E98BE3B4E5E30DDAC5F4F3 /* Models.swift in Sources */,
+				038117E0C0B6A955B28F1926 /* RiskModel.swift in Sources */,
+				B7F6D7B09D64CBFC59D2FDD4 /* ScopeView.swift in Sources */,
+				04D4AF46E579896AE437CCD0 /* SessionEngine.swift in Sources */,
+				2F12E8307ADA3A0423148B9A /* VideoSources.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		5C61EC149385FE1A2F50F32F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		7660A478FA3AB46561A85A1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "BleedWatch uses the camera to watch a surgical video screen and estimate bleeding.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aarivbhalla.bleedwatch;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		9B2C03AFAA967A6BC04DC27D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "BleedWatch uses the camera to watch a surgical video screen and estimate bleeding.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aarivbhalla.bleedwatch;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		B1B729D7E74136BE526CDAE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		342BEEB1168513828C496205 /* Build configuration list for PBXNativeTarget "BleedWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7660A478FA3AB46561A85A1A /* Debug */,
+				9B2C03AFAA967A6BC04DC27D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		956B890195D7EA08CC0AF2E8 /* Build configuration list for PBXProject "BleedWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5C61EC149385FE1A2F50F32F /* Debug */,
+				B1B729D7E74136BE526CDAE7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B8D7A64800C5A67E9E788181 /* Project object */;
+}

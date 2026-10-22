@@ -2,3 +2,10 @@
 __pycache__/
 data/frames/
 *.zip
+ios/build/
+ios/BleedWatch.xcodeproj/xcuserdata/
+data/yolo/
+models/detector/
+*.pt
+models_detector_log.txt
+runs/
