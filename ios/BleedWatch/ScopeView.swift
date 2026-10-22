@@ -6,6 +6,7 @@ enum Theme {
     static let line = Color(white: 0.18)
     static let alert = Color(red: 0.95, green: 0.27, blue: 0.23)
     static let normal = Color(red: 0.45, green: 0.85, blue: 0.55)
+    static let caution = Color(red: 0.98, green: 0.72, blue: 0.25)
     static let label = Font.system(size: 11, weight: .medium).width(.expanded)
     static func mono(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
         .system(size: size, weight: weight, design: .monospaced)
@@ -127,16 +128,29 @@ struct ScopeView: View {
 
     private var readout: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .lastTextBaseline) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("EST. BLOOD LOSS").font(Theme.label).foregroundStyle(.secondary)
-                    Text(engine.estimateML.map { "\(Int($0).formatted()) mL" } ?? "– – –")
-                        .font(Theme.mono(40, .medium))
-                        .contentTransition(.numericText())
-                        .animation(.default, value: engine.estimateML)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("BLEEDING RISK").font(Theme.label).foregroundStyle(.secondary)
+                Text(engine.tier.map { $0.name } ?? "ANALYZING")
+                    .font(Theme.mono(40, .medium))
+                    .foregroundStyle(tierColor)
+                    .contentTransition(.opacity)
+                    .animation(.default, value: engine.tier)
+                if let tier = engine.tier {
+                    Text("\(Int((tier.severeRate * 100).rounded()))% of similar cases became severe bleeds (>500 mL)")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                } else {
+                    Text("First risk call at \(SessionEngine.firstCallSecond) s")
+                        .font(.subheadline).foregroundStyle(.secondary)
                 }
-                Spacer()
-                status
+            }
+
+            if let range = engine.range {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("PROJECTED LOSS").font(Theme.label).foregroundStyle(.secondary)
+                    Spacer()
+                    Text("\(range.low.formatted())–\(range.high.formatted()) mL")
+                        .font(Theme.mono(17))
+                }
             }
 
             Sparkline(values: engine.history, threshold: engine.model.alertThreshold,
@@ -149,7 +163,7 @@ struct ScopeView: View {
                 Metric(label: "WINDOW", value: engine.isLocked ? "LOCKED" : "\(engine.second)/\(engine.model.windowSeconds)s")
             }
 
-            if let reason = engine.reason {
+            if engine.hasCall, let reason = engine.reason {
                 HStack(spacing: 8) {
                     Rectangle().fill(reason.raisesRisk ? Theme.alert : Theme.normal).frame(width: 2)
                     Text(reason.text).font(.subheadline)
@@ -167,7 +181,7 @@ struct ScopeView: View {
             }
 
             if !engine.detectorAvailable {
-                Text("Tool detector not installed; estimate uses blood only.")
+                Text("Tool detector not installed; risk uses blood only.")
                     .font(.caption).foregroundStyle(.tertiary)
             }
         }
@@ -175,14 +189,13 @@ struct ScopeView: View {
         .padding(.top, 16)
     }
 
-    private var status: some View {
-        let text = engine.estimateML == nil ? "ANALYZING" : engine.isAlert ? "HIGH RISK" : "STABLE"
-        let color = engine.estimateML == nil ? Color.gray : engine.isAlert ? Theme.alert : Theme.normal
-        return Text(text)
-            .font(Theme.mono(13, .semibold))
-            .padding(.horizontal, 10).padding(.vertical, 6)
-            .overlay(Rectangle().stroke(color, lineWidth: 1.5))
-            .foregroundStyle(color)
+    private var tierColor: Color {
+        switch engine.tier?.name {
+        case "HIGH": return Theme.alert
+        case "MODERATE": return Theme.caution
+        case "LOW": return Theme.normal
+        default: return .gray
+        }
     }
 
     private func clock(_ seconds: Int) -> String {

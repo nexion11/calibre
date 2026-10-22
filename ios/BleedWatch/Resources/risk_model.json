@@ -37,5 +37,24 @@
   ],
   "intercept": 5.636457684042446,
   "alertThreshold": 250.02113195099048,
-  "windowSeconds": 60
+  "windowSeconds": 60,
+  "rangeLow": 0.25050113829629905,
+  "rangeHigh": 3.1962505260714735,
+  "tiers": [
+    {
+      "name": "LOW",
+      "below": 150.0,
+      "severeRate": 0.09259259259259259
+    },
+    {
+      "name": "MODERATE",
+      "below": 250.02113195099048,
+      "severeRate": 0.1926782273603083
+    },
+    {
+      "name": "HIGH",
+      "below": null,
+      "severeRate": 0.5587808417997098
+    }
+  ]
 }

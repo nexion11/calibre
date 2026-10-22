@@ -24,7 +24,16 @@ final class SessionEngine: ObservableObject {
     let source: FrameSource
     private var observations: [Observation] = []
 
-    var isAlert: Bool { (estimateML ?? 0) > model.alertThreshold }
+    var isAlert: Bool { hasCall && (estimateML ?? 0) > model.alertThreshold }
+    /// No risk call before 15 s: earlier than that the estimate is mostly noise (see live_analysis.py).
+    static let firstCallSecond = 15
+    var hasCall: Bool { second >= Self.firstCallSecond && estimateML != nil }
+    var tier: RiskModel.Tier? { hasCall ? estimateML.map(model.tier(for:)) : nil }
+    /// The 80% range, rounded to the nearest 10 mL so it doesn't look more precise than it is.
+    var range: (low: Int, high: Int)? {
+        guard hasCall else { return nil }
+        return estimateML.map { (Int(($0 * model.rangeLow / 10).rounded()) * 10, Int(($0 * model.rangeHigh / 10).rounded()) * 10) }
+    }
     var isLocked: Bool { second >= model.windowSeconds }
     var detectorAvailable: Bool { ToolDetector.shared.isAvailable }
     var sample: SampleCase? {

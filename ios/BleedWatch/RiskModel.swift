@@ -10,6 +10,21 @@ struct RiskModel: Decodable {
     let intercept: Double
     let alertThreshold: Double
     let windowSeconds: Int
+    /// 80% of held-out trials landed between rangeLow× and rangeHigh× the estimate.
+    let rangeLow: Double
+    let rangeHigh: Double
+    let tiers: [Tier]
+
+    /// A risk level, with how often held-out trials at that level became severe (>500 mL).
+    struct Tier: Decodable, Equatable {
+        let name: String
+        let below: Double?
+        let severeRate: Double
+    }
+
+    func tier(for estimate: Double) -> Tier {
+        tiers.first { $0.below.map { estimate < $0 } ?? true } ?? tiers[tiers.count - 1]
+    }
 
     static func load() -> RiskModel {
         let url = Bundle.main.url(forResource: "risk_model", withExtension: "json")!
