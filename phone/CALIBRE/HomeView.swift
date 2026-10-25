@@ -16,9 +16,9 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
 
-            Text("BleedWatch")
+            Text("CALIBRE")
                 .font(.system(size: 34, weight: .semibold))
-            Text("Hemorrhage monitor for endoscopic\nskull-base surgery")
+            Text("AI coach for carotid-injury\nsimulation training")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .padding(.top, 6)

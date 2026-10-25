@@ -1,7 +1,7 @@
 {
   "features": [
-    "suction_frac",
-    "cottonoid_frac",
+    "suction_amt",
+    "cottonoid_amt",
     "tools_per_frame",
     "blood_mean",
     "blood_max",

@@ -2,8 +2,8 @@
 __pycache__/
 data/frames/
 *.zip
-ios/build/
-ios/BleedWatch.xcodeproj/xcuserdata/
+phone/build/
+phone/CALIBRE.xcodeproj/xcuserdata/
 data/yolo/
 models/detector/
 *.pt

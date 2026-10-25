@@ -1,4 +1,4 @@
-frame,blood_frac,trial_id,frame_number
+frame,blood_amt,trial_id,frame_number
 S102T1_frame_00000001.jpeg,0.015423652918055624,S102T1,1
 S102T1_frame_00000002.jpeg,0.020470115953087935,S102T1,2
 S102T1_frame_00000003.jpeg,0.015994020926756353,S102T1,3

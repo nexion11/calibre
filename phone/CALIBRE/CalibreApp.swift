@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct BleedWatchApp: App {
+struct CalibreApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()

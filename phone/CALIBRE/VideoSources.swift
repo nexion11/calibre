@@ -1,7 +1,7 @@
 import AVFoundation
 import CoreImage
 
-/// Anything that shows smooth video and hands BleedWatch one frame per second.
+/// Anything that shows smooth video and hands CALIBRE one frame per second.
 protocol FrameSource: AnyObject {
     var onFrame: ((CGImage) -> Void)? { get set }
     var onFinish: (() -> Void)? { get set }
@@ -15,7 +15,7 @@ final class CameraSource: NSObject, FrameSource, AVCaptureVideoDataOutputSampleB
     var onFrame: ((CGImage) -> Void)?
     var onFinish: (() -> Void)?
     let session = AVCaptureSession()
-    private let queue = DispatchQueue(label: "bleedwatch.camera")
+    private let queue = DispatchQueue(label: "calibre.camera")
     private let context = CIContext()
     private var lastFrame = Date.distantPast
 

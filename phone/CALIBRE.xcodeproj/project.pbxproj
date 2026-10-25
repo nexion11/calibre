@@ -1,0 +1,369 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1243443AE2B47FB3211A4FEA /* FrameAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D291D66BDE08190806FAA3B4 /* FrameAnalyzer.swift */; };
+		35F32B6E9A454B34A029D383 /* DataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6A318AA306706F33D9AD18 /* DataTypes.swift */; };
+		4B9F6F376AEE7CDE2B75AFDA /* sample_S103T2.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 469911A88E77F569DF787630 /* sample_S103T2.mp4 */; };
+		70DA5CFD4FD06D881115164E /* risk_model.json in Resources */ = {isa = PBXBuildFile; fileRef = 991B79E705A5D1F86C24DBC9 /* risk_model.json */; };
+		72281AAEBD9802D3320725C8 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BE42AE7D980DA0F98E1A1F /* HomeView.swift */; };
+		72E8A664DFCB6BF9E40203DF /* VideoSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3625CD1E5BC8C8E3BC55AB2 /* VideoSources.swift */; };
+		9DEB1A2C9CCE93C2A06D5BE9 /* RiskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A905110CAC202E8B8D845E7 /* RiskModel.swift */; };
+		A0691A8B9145B210CCB6CF4D /* sample_S814T1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = DBFA45BDFD8278F8479D6735 /* sample_S814T1.mp4 */; };
+		AD594EF059CD2B8C3B72F051 /* ScopeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FDFCE7EB66CFFF71A6930C /* ScopeView.swift */; };
+		C503278ADCC27D4F45E543F8 /* SessionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F844100B17B87571090494C1 /* SessionEngine.swift */; };
+		C7F56FAC46106C5A68DC30B5 /* CalibreApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E7BFCC9240CEA133200E92 /* CalibreApp.swift */; };
+		E58015BC98455C7794137F74 /* sample_S807T1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A104F44D4ECFA6A0327EC239 /* sample_S807T1.mp4 */; };
+		E7A3D2566E0610A11A6D7E18 /* CalibreToolDetector.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 0A7E5B6A39AE80A9FA2DC843 /* CalibreToolDetector.mlpackage */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0A7E5B6A39AE80A9FA2DC843 /* CalibreToolDetector.mlpackage */ = {isa = PBXFileReference; path = CalibreToolDetector.mlpackage; sourceTree = "<group>"; };
+		1B6A318AA306706F33D9AD18 /* DataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTypes.swift; sourceTree = "<group>"; };
+		22F33A9660661E140A7FD527 /* CALIBRE.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CALIBRE.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		469911A88E77F569DF787630 /* sample_S103T2.mp4 */ = {isa = PBXFileReference; path = sample_S103T2.mp4; sourceTree = "<group>"; };
+		5A905110CAC202E8B8D845E7 /* RiskModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskModel.swift; sourceTree = "<group>"; };
+		68E7BFCC9240CEA133200E92 /* CalibreApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibreApp.swift; sourceTree = "<group>"; };
+		991B79E705A5D1F86C24DBC9 /* risk_model.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = risk_model.json; sourceTree = "<group>"; };
+		A104F44D4ECFA6A0327EC239 /* sample_S807T1.mp4 */ = {isa = PBXFileReference; path = sample_S807T1.mp4; sourceTree = "<group>"; };
+		D291D66BDE08190806FAA3B4 /* FrameAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameAnalyzer.swift; sourceTree = "<group>"; };
+		D3625CD1E5BC8C8E3BC55AB2 /* VideoSources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSources.swift; sourceTree = "<group>"; };
+		DBFA45BDFD8278F8479D6735 /* sample_S814T1.mp4 */ = {isa = PBXFileReference; path = sample_S814T1.mp4; sourceTree = "<group>"; };
+		E7BE42AE7D980DA0F98E1A1F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		E8FDFCE7EB66CFFF71A6930C /* ScopeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeView.swift; sourceTree = "<group>"; };
+		F844100B17B87571090494C1 /* SessionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionEngine.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1F6B44184D4731ADB36E7328 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				22F33A9660661E140A7FD527 /* CALIBRE.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		35C77529710CCA86707FC1DE /* CALIBRE */ = {
+			isa = PBXGroup;
+			children = (
+				68E7BFCC9240CEA133200E92 /* CalibreApp.swift */,
+				0A7E5B6A39AE80A9FA2DC843 /* CalibreToolDetector.mlpackage */,
+				1B6A318AA306706F33D9AD18 /* DataTypes.swift */,
+				D291D66BDE08190806FAA3B4 /* FrameAnalyzer.swift */,
+				E7BE42AE7D980DA0F98E1A1F /* HomeView.swift */,
+				5A905110CAC202E8B8D845E7 /* RiskModel.swift */,
+				E8FDFCE7EB66CFFF71A6930C /* ScopeView.swift */,
+				F844100B17B87571090494C1 /* SessionEngine.swift */,
+				D3625CD1E5BC8C8E3BC55AB2 /* VideoSources.swift */,
+				A9C3F2A2F340BC9E0FC87EED /* Resources */,
+			);
+			path = CALIBRE;
+			sourceTree = "<group>";
+		};
+		A9C3F2A2F340BC9E0FC87EED /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				991B79E705A5D1F86C24DBC9 /* risk_model.json */,
+				469911A88E77F569DF787630 /* sample_S103T2.mp4 */,
+				A104F44D4ECFA6A0327EC239 /* sample_S807T1.mp4 */,
+				DBFA45BDFD8278F8479D6735 /* sample_S814T1.mp4 */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		BCAF1A52690230FC1C948E75 = {
+			isa = PBXGroup;
+			children = (
+				35C77529710CCA86707FC1DE /* CALIBRE */,
+				1F6B44184D4731ADB36E7328 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6B95A3A93E039938700B4055 /* CALIBRE */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9ADEEAB39B691E8A7D85579F /* Build configuration list for PBXNativeTarget "CALIBRE" */;
+			buildPhases = (
+				D8C80BE04E089F479B4CD73B /* Sources */,
+				7994731E65071E0D7862BE97 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CALIBRE;
+			packageProductDependencies = (
+			);
+			productName = CALIBRE;
+			productReference = 22F33A9660661E140A7FD527 /* CALIBRE.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0A619FF40B1D2952B7379B4A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					6B95A3A93E039938700B4055 = {
+						DevelopmentTeam = NSKUC2DWJT;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 48B6421F9CDEFFA9108B971C /* Build configuration list for PBXProject "CALIBRE" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = BCAF1A52690230FC1C948E75;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1F6B44184D4731ADB36E7328 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6B95A3A93E039938700B4055 /* CALIBRE */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7994731E65071E0D7862BE97 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				70DA5CFD4FD06D881115164E /* risk_model.json in Resources */,
+				4B9F6F376AEE7CDE2B75AFDA /* sample_S103T2.mp4 in Resources */,
+				E58015BC98455C7794137F74 /* sample_S807T1.mp4 in Resources */,
+				A0691A8B9145B210CCB6CF4D /* sample_S814T1.mp4 in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D8C80BE04E089F479B4CD73B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7F56FAC46106C5A68DC30B5 /* CalibreApp.swift in Sources */,
+				E7A3D2566E0610A11A6D7E18 /* CalibreToolDetector.mlpackage in Sources */,
+				35F32B6E9A454B34A029D383 /* DataTypes.swift in Sources */,
+				1243443AE2B47FB3211A4FEA /* FrameAnalyzer.swift in Sources */,
+				72281AAEBD9802D3320725C8 /* HomeView.swift in Sources */,
+				9DEB1A2C9CCE93C2A06D5BE9 /* RiskModel.swift in Sources */,
+				AD594EF059CD2B8C3B72F051 /* ScopeView.swift in Sources */,
+				C503278ADCC27D4F45E543F8 /* SessionEngine.swift in Sources */,
+				72E8A664DFCB6BF9E40203DF /* VideoSources.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		8C554848D64F6E0FE3D8D731 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NSKUC2DWJT;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = CALIBRE;
+				INFOPLIST_KEY_NSCameraUsageDescription = "CALIBRE uses the camera to watch the simulator's video screen and evaluate the bleeding response.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aarivbhalla.calibre;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A21569067BABD3B15E3EAA4C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NSKUC2DWJT;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = CALIBRE;
+				INFOPLIST_KEY_NSCameraUsageDescription = "CALIBRE uses the camera to watch the simulator's video screen and evaluate the bleeding response.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aarivbhalla.calibre;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		D0E097BE8F643CB3B6ED4D5C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		E03E8893033DBC534C009367 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		48B6421F9CDEFFA9108B971C /* Build configuration list for PBXProject "CALIBRE" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E03E8893033DBC534C009367 /* Debug */,
+				D0E097BE8F643CB3B6ED4D5C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9ADEEAB39B691E8A7D85579F /* Build configuration list for PBXNativeTarget "CALIBRE" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A21569067BABD3B15E3EAA4C /* Debug */,
+				8C554848D64F6E0FE3D8D731 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0A619FF40B1D2952B7379B4A /* Project object */;
+}

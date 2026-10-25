@@ -13,7 +13,7 @@ struct ToolBox: Identifiable {
     let h: Double
 }
 
-/// What BleedWatch saw in one second of video.
+/// What CALIBRE saw in one second of video.
 struct Observation {
     let second: Int
     let bloodFraction: Double
