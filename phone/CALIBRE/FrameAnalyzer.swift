@@ -3,7 +3,7 @@ import CoreML
 import UIKit
 import Vision
 
-/// Blood coverage: the same color rule as calibre/features/blood_coverage.py.
+/// Blood coverage: the same color rule as calibre/components/blood.py.
 enum BloodDetector {
     static let width = 480, height = 270
     static let minSaturation = 0.75  // blood is deep, saturated red

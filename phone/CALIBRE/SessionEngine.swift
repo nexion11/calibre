@@ -15,6 +15,8 @@ final class SessionEngine: ObservableObject {
     @Published var second = 0
     @Published var estimateML: Double?
     @Published var history: [Double] = []
+    /// Share of the view that was blood, every second.
+    @Published var bloodHistory: [Double] = []
     @Published var reason: Explanation?
     @Published var isFinished = false
     /// Which seconds each tool was seen in, for the tool timeline.
@@ -31,7 +33,7 @@ final class SessionEngine: ObservableObject {
     static let firstCallSecond = 15
     var hasCall: Bool { second >= Self.firstCallSecond && estimateML != nil }
     var tier: RiskModel.Tier? { hasCall ? estimateML.map(model.tier(for:)) : nil }
-    /// The 80% range, rounded to the nearest 10 mL so it doesn't look more precise than it is.
+    /// The middle-50% range, rounded to the nearest 10 mL so it doesn't look more precise than it is.
     var range: (low: Int, high: Int)? {
         guard hasCall else { return nil }
         return estimateML.map { (Int(($0 * model.rangeLow / 10).rounded()) * 10, Int(($0 * model.rangeHigh / 10).rounded()) * 10) }
@@ -78,6 +80,7 @@ final class SessionEngine: ObservableObject {
         self.tools = tools
         for label in Set(tools.map(\.label)) { toolTimeline[label, default: []].append(second) }
         bloodFraction = blood.fraction
+        bloodHistory.append(blood.fraction)
         bloodMask = blood.mask.map { UIImage(cgImage: $0) }
 
         guard second <= model.windowSeconds else { return }  // estimate locks at 60 s
