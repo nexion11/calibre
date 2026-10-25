@@ -1,0 +1,55 @@
+{
+  "best_runs": 78,
+  "total_runs": 143,
+  "habits": {
+    "cottonoid_first": {
+      "better": "lower",
+      "best_median": 23.0,
+      "best_low": 15.0,
+      "best_high": 32.0,
+      "other_median": 27.0,
+      "p_value": 0.004414702802281194
+    },
+    "cottonoid_share_60": {
+      "better": "higher",
+      "best_median": 0.4083333333333333,
+      "best_low": 0.3,
+      "best_high": 0.5166666666666667,
+      "other_median": 0.2833333333333333,
+      "p_value": 0.002299457521568569
+    },
+    "muscle_first": {
+      "better": "lower",
+      "best_median": 57.0,
+      "best_low": 38.5,
+      "best_high": 78.5,
+      "other_median": 79.0,
+      "p_value": 0.0009238997389566377
+    },
+    "tools_per_frame": {
+      "better": "higher",
+      "best_median": 2.3106024096385545,
+      "best_low": 1.9672077922077924,
+      "best_high": 2.5319369112189554,
+      "other_median": 2.092150170648464,
+      "p_value": 0.0020898867261331692
+    }
+  },
+  "good_run": {
+    "trial_id": "S610T2",
+    "blood_loss": 358.0,
+    "length": 149,
+    "first_used": {
+      "suction": 1,
+      "grasper": 23,
+      "cottonoid": 23,
+      "muscle": 70
+    },
+    "habits": {
+      "cottonoid_first": 23.0,
+      "cottonoid_share_60": 0.4166666666666667,
+      "muscle_first": 70.0,
+      "tools_per_frame": 2.3624161073825505
+    }
+  }
+}

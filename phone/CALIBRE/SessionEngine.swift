@@ -21,6 +21,8 @@ final class SessionEngine: ObservableObject {
     @Published var isFinished = false
     /// Which seconds each tool was seen in, for the tool timeline.
     @Published var toolTimeline: [String: [Int]] = [:]
+    /// How many tools were on screen each second, for the debrief.
+    var toolCounts: [Int] = []
     @Published var aspect: CGFloat = 16 / 9
 
     let mode: Mode
@@ -78,6 +80,7 @@ final class SessionEngine: ObservableObject {
     private func record(blood: (fraction: Double, mask: CGImage?), tools: [ToolBox]) {
         second += 1
         self.tools = tools
+        toolCounts.append(tools.count)
         for label in Set(tools.map(\.label)) { toolTimeline[label, default: []].append(second) }
         bloodFraction = blood.fraction
         bloodHistory.append(blood.fraction)

@@ -14,6 +14,7 @@
 		70DA5CFD4FD06D881115164E /* risk_model.json in Resources */ = {isa = PBXBuildFile; fileRef = 991B79E705A5D1F86C24DBC9 /* risk_model.json */; };
 		72281AAEBD9802D3320725C8 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BE42AE7D980DA0F98E1A1F /* HomeView.swift */; };
 		72E8A664DFCB6BF9E40203DF /* VideoSources.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3625CD1E5BC8C8E3BC55AB2 /* VideoSources.swift */; };
+		849BE6BD789FF766D1A29294 /* Debrief.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4044DF22FD54362169C5EE91 /* Debrief.swift */; };
 		9DEB1A2C9CCE93C2A06D5BE9 /* RiskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A905110CAC202E8B8D845E7 /* RiskModel.swift */; };
 		A0691A8B9145B210CCB6CF4D /* sample_S814T1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = DBFA45BDFD8278F8479D6735 /* sample_S814T1.mp4 */; };
 		AD594EF059CD2B8C3B72F051 /* ScopeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FDFCE7EB66CFFF71A6930C /* ScopeView.swift */; };
@@ -22,6 +23,7 @@
 		CFA84E52CD38337C787DC201 /* predicted_vs_actual.png in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5A5F2FB85F553C81B59E5 /* predicted_vs_actual.png */; };
 		E58015BC98455C7794137F74 /* sample_S807T1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A104F44D4ECFA6A0327EC239 /* sample_S807T1.mp4 */; };
 		E7A3D2566E0610A11A6D7E18 /* CalibreToolDetector.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 0A7E5B6A39AE80A9FA2DC843 /* CalibreToolDetector.mlpackage */; };
+		F0303532CDCCC42FACD5F59C /* debrief_reference.json in Resources */ = {isa = PBXBuildFile; fileRef = 49CFC2B451ECF2434BE5BEE1 /* debrief_reference.json */; };
 		F15B05EF3822ACBA38CE50A0 /* live_accuracy.png in Resources */ = {isa = PBXBuildFile; fileRef = 124608FDE5C37BF2019684B8 /* live_accuracy.png */; };
 /* End PBXBuildFile section */
 
@@ -32,7 +34,9 @@
 		1B6A318AA306706F33D9AD18 /* DataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTypes.swift; sourceTree = "<group>"; };
 		1CB5A5F2FB85F553C81B59E5 /* predicted_vs_actual.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = predicted_vs_actual.png; sourceTree = "<group>"; };
 		22F33A9660661E140A7FD527 /* CALIBRE.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CALIBRE.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4044DF22FD54362169C5EE91 /* Debrief.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Debrief.swift; sourceTree = "<group>"; };
 		469911A88E77F569DF787630 /* sample_S103T2.mp4 */ = {isa = PBXFileReference; path = sample_S103T2.mp4; sourceTree = "<group>"; };
+		49CFC2B451ECF2434BE5BEE1 /* debrief_reference.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = debrief_reference.json; sourceTree = "<group>"; };
 		5A905110CAC202E8B8D845E7 /* RiskModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskModel.swift; sourceTree = "<group>"; };
 		68E7BFCC9240CEA133200E92 /* CalibreApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibreApp.swift; sourceTree = "<group>"; };
 		991B79E705A5D1F86C24DBC9 /* risk_model.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = risk_model.json; sourceTree = "<group>"; };
@@ -60,6 +64,7 @@
 				68E7BFCC9240CEA133200E92 /* CalibreApp.swift */,
 				0A7E5B6A39AE80A9FA2DC843 /* CalibreToolDetector.mlpackage */,
 				1B6A318AA306706F33D9AD18 /* DataTypes.swift */,
+				4044DF22FD54362169C5EE91 /* Debrief.swift */,
 				D291D66BDE08190806FAA3B4 /* FrameAnalyzer.swift */,
 				E7BE42AE7D980DA0F98E1A1F /* HomeView.swift */,
 				5A905110CAC202E8B8D845E7 /* RiskModel.swift */,
@@ -74,6 +79,7 @@
 		A9C3F2A2F340BC9E0FC87EED /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				49CFC2B451ECF2434BE5BEE1 /* debrief_reference.json */,
 				124608FDE5C37BF2019684B8 /* live_accuracy.png */,
 				174C831964F691CADE9D6891 /* model_weights.png */,
 				1CB5A5F2FB85F553C81B59E5 /* predicted_vs_actual.png */,
@@ -153,6 +159,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0303532CDCCC42FACD5F59C /* debrief_reference.json in Resources */,
 				F15B05EF3822ACBA38CE50A0 /* live_accuracy.png in Resources */,
 				6F1F2898098313827EA29E96 /* model_weights.png in Resources */,
 				CFA84E52CD38337C787DC201 /* predicted_vs_actual.png in Resources */,
@@ -173,6 +180,7 @@
 				C7F56FAC46106C5A68DC30B5 /* CalibreApp.swift in Sources */,
 				E7A3D2566E0610A11A6D7E18 /* CalibreToolDetector.mlpackage in Sources */,
 				35F32B6E9A454B34A029D383 /* DataTypes.swift in Sources */,
+				849BE6BD789FF766D1A29294 /* Debrief.swift in Sources */,
 				1243443AE2B47FB3211A4FEA /* FrameAnalyzer.swift in Sources */,
 				72281AAEBD9802D3320725C8 /* HomeView.swift in Sources */,
 				9DEB1A2C9CCE93C2A06D5BE9 /* RiskModel.swift in Sources */,

@@ -2,21 +2,20 @@ import AVFoundation
 import SwiftUI
 
 enum Theme {
-    static let panel = Color(white: 0.08)
-    static let line = Color(white: 0.18)
-    static let alert = Color(red: 0.95, green: 0.27, blue: 0.23)
-    static let normal = Color(red: 0.45, green: 0.85, blue: 0.55)
-    static let caution = Color(red: 0.98, green: 0.72, blue: 0.25)
+    static let line = Color(red: 0.80, green: 0.85, blue: 0.92)
+    static let alert = Color(red: 0.86, green: 0.20, blue: 0.17)
+    static let normal = Color(red: 0.13, green: 0.58, blue: 0.32)
+    static let caution = Color(red: 0.88, green: 0.55, blue: 0.05)
     static let label = Font.system(size: 13, weight: .medium)
     /// One color per tool, used for its box and its row in the timeline.
     static func tool(_ label: String) -> Color {
         switch label {
-        case "suction": return Color(red: 0.40, green: 0.75, blue: 1.0)
-        case "grasper": return Color(red: 0.98, green: 0.80, blue: 0.35)
-        case "cottonoid": return Color(red: 0.75, green: 0.60, blue: 1.0)
-        case "muscle": return Color(red: 1.0, green: 0.55, blue: 0.70)
-        case "string": return Color(red: 0.55, green: 0.90, blue: 0.70)
-        default: return .white
+        case "suction": return Color(red: 0.20, green: 0.50, blue: 0.92)
+        case "grasper": return Color(red: 0.92, green: 0.60, blue: 0.05)
+        case "cottonoid": return Color(red: 0.55, green: 0.35, blue: 0.90)
+        case "muscle": return Color(red: 0.90, green: 0.30, blue: 0.50)
+        case "string": return Color(red: 0.15, green: 0.65, blue: 0.40)
+        default: return .gray
         }
     }
     static func mono(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
@@ -30,26 +29,39 @@ struct ScopeView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showBlood = false
     @State private var showModelInfo = false
+    @State private var showDebrief = false
 
     var body: some View {
         VStack(spacing: 0) {
             topBar
-            video
+            videoCard
                 .onTapGesture { showBlood.toggle() }
                 .overlay(alignment: .bottomTrailing) {
                     Text(showBlood ? "Blood map on" : "Tap for blood map")
                         .font(.caption)
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 6).padding(.vertical, 3)
                         .background(Color.black.opacity(0.6), in: Capsule())
                         .padding(8)
                         .allowsHitTesting(false)
                 }
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
             readout
             Spacer(minLength: 0)
         }
-        .background(Color.black.ignoresSafeArea())
-        .foregroundStyle(.white)
+        .background(HomeColors.background.ignoresSafeArea())
+        .foregroundStyle(HomeColors.ink)
         .sheet(isPresented: $showModelInfo) { ModelInfoSheet() }
+        .fullScreenCover(isPresented: $showDebrief) {
+            DebriefView(engine: engine) {
+                showDebrief = false
+                dismiss()
+            }
+        }
+        .onChange(of: engine.isFinished) { _, finished in
+            if finished { showDebrief = true }
+        }
         .onAppear { engine.start() }
         .onDisappear { engine.stop() }
         .statusBarHidden()
@@ -74,6 +86,14 @@ struct ScopeView: View {
             }
             .font(Theme.label)
             Spacer()
+            Button("Finish") {
+                engine.stop()
+                showDebrief = true
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(HomeColors.blue)
+            .frame(minWidth: 56, minHeight: 36)
+            .contentShape(Rectangle())
             Button { showModelInfo = true } label: {
                 Image(systemName: "info.circle").font(.system(size: 17)).frame(width: 36, height: 36)
             }
@@ -117,6 +137,13 @@ struct ScopeView: View {
             .aspectRatio(1, contentMode: .fit)
             .clipped()
         }
+    }
+
+    // the scope video stays on black, in a rounded card
+    private var videoCard: some View {
+        video
+            .background(Color.black)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     /// Size that covers `container` while keeping the video's shape.
@@ -180,7 +207,7 @@ struct ScopeView: View {
                 .padding(.top, 2)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 16)
+        .padding(.top, 12)
     }
 
     /// What the model outputs, written out.
@@ -362,7 +389,7 @@ private struct ToolMarker: View {
                 .font(.system(size: 10, weight: .semibold))
                 .padding(.horizontal, 4).padding(.vertical, 1)
                 .background(Theme.tool(tool.label), in: RoundedRectangle(cornerRadius: 3))
-                .foregroundStyle(.black)
+                .foregroundStyle(.white)
                 .offset(y: -16)
         }
         .frame(width: rect.width, height: rect.height)
@@ -419,7 +446,7 @@ private struct Sparkline: View {
                     p.move(to: CGPoint(x: 0, y: y(threshold)))
                     p.addLine(to: CGPoint(x: geo.size.width, y: y(threshold)))
                 }
-                .stroke(Color.white.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                .stroke(HomeColors.soft.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
                 Path { p in
                     for (i, v) in values.enumerated() {
                         i == 0 ? p.move(to: CGPoint(x: x(i), y: y(v))) : p.addLine(to: CGPoint(x: x(i), y: y(v)))

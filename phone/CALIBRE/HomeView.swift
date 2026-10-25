@@ -65,7 +65,6 @@ struct HomeView: View {
         }
         .fullScreenCover(item: $target) { target in
             ScopeView(engine: SessionEngine(mode: target.mode))
-                .preferredColorScheme(.dark)
         }
     }
 
