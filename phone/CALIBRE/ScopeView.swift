@@ -18,6 +18,7 @@ struct ScopeView: View {
     @StateObject var engine: SessionEngine
     @Environment(\.dismiss) private var dismiss
     @State private var showBlood = false
+    @State private var showModelInfo = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,6 +38,7 @@ struct ScopeView: View {
         }
         .background(Color.black.ignoresSafeArea())
         .foregroundStyle(.white)
+        .sheet(isPresented: $showModelInfo) { ModelInfoSheet() }
         .onAppear { engine.start() }
         .onDisappear { engine.stop() }
         .statusBarHidden()
@@ -61,7 +63,9 @@ struct ScopeView: View {
             }
             .font(Theme.label)
             Spacer()
-            Text(clock(engine.second)).font(Theme.mono(14)).frame(width: 60, alignment: .trailing)
+            Button { showModelInfo = true } label: {
+                Image(systemName: "info.circle").font(.system(size: 17)).frame(width: 36, height: 36)
+            }
         }
         .padding(.horizontal, 12)
         .frame(height: 44)
@@ -135,22 +139,7 @@ struct ScopeView: View {
                     .foregroundStyle(tierColor)
                     .contentTransition(.opacity)
                     .animation(.default, value: engine.tier)
-                if let tier = engine.tier {
-                    Text("\(Int((tier.severeRate * 100).rounded()))% of similar cases became severe bleeds (>500 mL)")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                } else {
-                    Text("First risk call at \(SessionEngine.firstCallSecond) s")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                }
-            }
-
-            if let range = engine.range {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("PROJECTED LOSS").font(Theme.label).foregroundStyle(.secondary)
-                    Spacer()
-                    Text("\(range.low.formatted())–\(range.high.formatted()) mL")
-                        .font(Theme.mono(17))
-                }
+                modelOutput
             }
 
             Sparkline(values: engine.history, threshold: engine.model.alertThreshold,
@@ -160,33 +149,31 @@ struct ScopeView: View {
             HStack(spacing: 0) {
                 Metric(label: "BLOOD", value: "\(Int(engine.bloodFraction * 100))%")
                 Metric(label: "TOOLS", value: engine.detectorAvailable ? "\(engine.tools.count)" : "—")
-                Metric(label: "WINDOW", value: engine.isLocked ? "LOCKED" : "\(engine.second)/\(engine.model.windowSeconds)s")
             }
 
-            if engine.hasCall, let reason = engine.reason {
-                HStack(spacing: 8) {
-                    Rectangle().fill(reason.raisesRisk ? Theme.alert : Theme.normal).frame(width: 2)
-                    Text(reason.text).font(.subheadline)
-                }
-                .fixedSize(horizontal: false, vertical: true)
-            }
+            ToolTimeline(timeline: engine.toolTimeline, seconds: max(engine.second, engine.model.windowSeconds))
 
-            if engine.isFinished, let sample = engine.sample {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("RECORDED OUTCOME").font(Theme.label).foregroundStyle(.secondary)
-                    Text("\(sample.actualBloodLoss.formatted()) mL lost · bleeding \(sample.controlled ? "controlled" : "not controlled") in 5 min")
-                        .font(.subheadline)
-                }
-                .padding(.top, 4)
-            }
-
-            if !engine.detectorAvailable {
-                Text("Tool detector not installed; risk uses blood only.")
-                    .font(.caption).foregroundStyle(.tertiary)
-            }
+            Text(clock(engine.second))
+                .font(Theme.mono(28, .medium))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 2)
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
+    }
+
+    /// The model's raw numbers, the way it actually outputs them.
+    private var modelOutput: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if let tier = engine.tier, let estimate = engine.estimateML, let range = engine.range {
+                Text("p_severe = \(String(format: "%.2f", tier.severeRate))")
+                Text("est_loss = \(Int(estimate)) mL   [\(range.low)–\(range.high)]")
+            } else {
+                Text("collecting… \(engine.second)/\(SessionEngine.firstCallSecond) s")
+            }
+        }
+        .font(Theme.mono(13))
+        .foregroundStyle(.secondary)
     }
 
     private var tierColor: Color {
@@ -204,6 +191,59 @@ struct ScopeView: View {
 }
 
 // MARK: - Pieces
+
+/// When each tool was on screen: one row per tool, a tick for every second it was seen.
+private struct ToolTimeline: View {
+    let timeline: [String: [Int]]
+    let seconds: Int
+    private let tools = ["suction", "grasper", "cottonoid", "muscle", "string"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("TOOL TIMELINE").font(Theme.label).foregroundStyle(.secondary)
+            ForEach(tools, id: \.self) { tool in
+                let seen = timeline[tool] ?? []
+                HStack(spacing: 8) {
+                    Text(tool).font(Theme.mono(10)).frame(width: 64, alignment: .leading)
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Rectangle().fill(Theme.line).frame(height: 1)
+                            ForEach(seen, id: \.self) { second in
+                                Rectangle().fill(Color.white.opacity(0.85))
+                                    .frame(width: max(geo.size.width / CGFloat(seconds), 1.5), height: 8)
+                                    .offset(x: geo.size.width * CGFloat(second - 1) / CGFloat(seconds))
+                            }
+                        }
+                        .frame(height: 8)
+                    }
+                    .frame(height: 8)
+                    Text(seen.first.map { "\($0 / 60):\(String(format: "%02d", $0 % 60))" } ?? "--:--")
+                        .font(Theme.mono(10)).foregroundStyle(.secondary).frame(width: 36, alignment: .trailing)
+                }
+            }
+        }
+    }
+}
+
+/// The model's accuracy chart (made by calibre/components/timing_analysis.py).
+private struct ModelInfoSheet: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Model accuracy").font(.headline)
+            if let chart = UIImage(named: "live_accuracy.png") {
+                Image(uiImage: chart).resizable().scaledToFit()
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            Text("Tested on 143 trials from surgeons the model never saw. AUC: 0.5 = coin flip, 1 = perfect.")
+                .font(.footnote).foregroundStyle(.secondary)
+            Spacer()
+        }
+        .padding(20)
+        .presentationDetents([.medium])
+    }
+}
+
 
 private struct Metric: View {
     let label: String

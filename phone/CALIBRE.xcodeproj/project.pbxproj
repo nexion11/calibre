@@ -20,10 +20,12 @@
 		C7F56FAC46106C5A68DC30B5 /* CalibreApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E7BFCC9240CEA133200E92 /* CalibreApp.swift */; };
 		E58015BC98455C7794137F74 /* sample_S807T1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A104F44D4ECFA6A0327EC239 /* sample_S807T1.mp4 */; };
 		E7A3D2566E0610A11A6D7E18 /* CalibreToolDetector.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 0A7E5B6A39AE80A9FA2DC843 /* CalibreToolDetector.mlpackage */; };
+		F15B05EF3822ACBA38CE50A0 /* live_accuracy.png in Resources */ = {isa = PBXBuildFile; fileRef = 124608FDE5C37BF2019684B8 /* live_accuracy.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0A7E5B6A39AE80A9FA2DC843 /* CalibreToolDetector.mlpackage */ = {isa = PBXFileReference; path = CalibreToolDetector.mlpackage; sourceTree = "<group>"; };
+		124608FDE5C37BF2019684B8 /* live_accuracy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = live_accuracy.png; sourceTree = "<group>"; };
 		1B6A318AA306706F33D9AD18 /* DataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTypes.swift; sourceTree = "<group>"; };
 		22F33A9660661E140A7FD527 /* CALIBRE.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CALIBRE.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		469911A88E77F569DF787630 /* sample_S103T2.mp4 */ = {isa = PBXFileReference; path = sample_S103T2.mp4; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 		A9C3F2A2F340BC9E0FC87EED /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				124608FDE5C37BF2019684B8 /* live_accuracy.png */,
 				991B79E705A5D1F86C24DBC9 /* risk_model.json */,
 				469911A88E77F569DF787630 /* sample_S103T2.mp4 */,
 				A104F44D4ECFA6A0327EC239 /* sample_S807T1.mp4 */,
@@ -144,6 +147,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F15B05EF3822ACBA38CE50A0 /* live_accuracy.png in Resources */,
 				70DA5CFD4FD06D881115164E /* risk_model.json in Resources */,
 				4B9F6F376AEE7CDE2B75AFDA /* sample_S103T2.mp4 in Resources */,
 				E58015BC98455C7794137F74 /* sample_S807T1.mp4 in Resources */,

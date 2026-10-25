@@ -38,8 +38,8 @@
   "intercept": 5.636457684042446,
   "alertThreshold": 250.02113195099048,
   "windowSeconds": 60,
-  "rangeLow": 0.25050113829629905,
-  "rangeHigh": 3.1962505260714735,
+  "rangeLow": 0.5573741214606103,
+  "rangeHigh": 1.922819093223885,
   "tiers": [
     {
       "name": "LOW",

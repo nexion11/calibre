@@ -37,7 +37,7 @@ held_out_estimates, held_out_actuals = np.array(held_out_estimates), np.array(he
 
 
 log_ratio = np.log(held_out_actuals / held_out_estimates)
-range_low, range_high = np.exp(np.quantile(log_ratio, [0.1, 0.9]))
+range_low, range_high = np.exp(np.quantile(log_ratio, [0.25, 0.75]))  # middle 50% of outcomes
 
 risk_tiers = []
 

@@ -17,6 +17,8 @@ final class SessionEngine: ObservableObject {
     @Published var history: [Double] = []
     @Published var reason: Explanation?
     @Published var isFinished = false
+    /// Which seconds each tool was seen in, for the tool timeline.
+    @Published var toolTimeline: [String: [Int]] = [:]
     @Published var aspect: CGFloat = 16 / 9
 
     let mode: Mode
@@ -74,6 +76,7 @@ final class SessionEngine: ObservableObject {
     private func record(blood: (fraction: Double, mask: CGImage?), tools: [ToolBox]) {
         second += 1
         self.tools = tools
+        for label in Set(tools.map(\.label)) { toolTimeline[label, default: []].append(second) }
         bloodFraction = blood.fraction
         bloodMask = blood.mask.map { UIImage(cgImage: $0) }
 
