@@ -67,6 +67,7 @@ final class FileSource: FrameSource {
     private var timeObserver: Any?
     private var endObserver: NSObjectProtocol?
     private var transform = CGAffineTransform.identity
+    private var lastSecond = -1
 
     init(url: URL) {
         let item = AVPlayerItem(url: url)
@@ -85,12 +86,15 @@ final class FileSource: FrameSource {
     }
 
     func start() {
+        guard timeObserver == nil else { return }  // onAppear can fire twice
         timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 1),
                                                       queue: .main) { [weak self] time in
-            guard let self, time.seconds >= 0.5,
+            // the observer also fires on play/pause, so only take each whole second once
+            guard let self, time.seconds >= 0.5, Int(time.seconds) != lastSecond,
                   let buffer = output.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else { return }
             var image = CIImage(cvPixelBuffer: buffer).transformed(by: transform)
             image = image.transformed(by: CGAffineTransform(translationX: -image.extent.minX, y: -image.extent.minY))
+            lastSecond = Int(time.seconds)
             if let cgImage = context.createCGImage(image, from: image.extent) {
                 DispatchQueue.global(qos: .userInitiated).async { self.onFrame?(cgImage) }
             }
