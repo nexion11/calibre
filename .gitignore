@@ -9,3 +9,4 @@ models/detector/
 *.pt
 models_detector_log.txt
 runs/
+submission/
