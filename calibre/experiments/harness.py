@@ -90,8 +90,29 @@ def evaluate(table, predict_ml, predict_failure, name=""):
     ranges = surgeon_bootstrap(table, averaged_ml, averaged_failure)
     summary = pd.DataFrame({"score": pd.DataFrame(per_split).mean(),
                             "low": ranges.loc[0.025], "high": ranges.loc[0.975]})
-    summary.attrs.update(name=name, trials=len(table))
+    summary.attrs.update(name=name, trials=len(table), predicted_ml=averaged_ml, failure_risk=averaged_failure)
     return summary
+
+
+def paired_difference(table, new, old, metric="severe_auc", seed=1):
+    """Is `new` really better than `old`? Resample surgeons and look at the gap each time."""
+    rng = np.random.default_rng(seed)
+    rows_by_surgeon = list(table.groupby("participant_id").indices.values())
+    gaps = []
+    for _ in range(bootstrap_rounds):
+        rows = np.concatenate([rows_by_surgeon[i] for i in rng.integers(len(rows_by_surgeon), size=len(rows_by_surgeon))])
+        sample = table.iloc[rows]
+        if (sample["blood_loss"] > severe_ml).nunique() < 2 or sample["success"].nunique() < 2:
+            continue
+        new_score = scores(sample, new.attrs["predicted_ml"][rows], new.attrs["failure_risk"][rows])[metric]
+        old_score = scores(sample, old.attrs["predicted_ml"][rows], old.attrs["failure_risk"][rows])[metric]
+        gaps.append(new_score - old_score)
+    gaps = np.array(gaps)
+    full_new = scores(table, new.attrs["predicted_ml"], new.attrs["failure_risk"])[metric]
+    full_old = scores(table, old.attrs["predicted_ml"], old.attrs["failure_risk"])[metric]
+    return {"gap": full_new - full_old,
+            "low": np.quantile(gaps, 0.025), "high": np.quantile(gaps, 0.975),
+            "chance_new_is_better": (gaps > 0).mean()}
 
 
 def show(summary):
