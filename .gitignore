@@ -14,3 +14,6 @@ data/yolo_folds/
 models/fold_detectors/
 models/fold_detectors_log.txt
 data/embeddings_*.npz
+data/yolo_search*/
+models/detector_search*/
+results/detector_search_quick/

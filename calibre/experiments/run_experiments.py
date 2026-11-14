@@ -1,13 +1,14 @@
 # Runs every experiment under the same rules and writes the numbers to results/.
 #   uv run python -m calibre.experiments.run_experiments human      (SOCAL's hand-drawn tool boxes)
 #   uv run python -m calibre.experiments.run_experiments auto       (our detector's boxes, no human labels)
+#   uv run python -m calibre.experiments.run_experiments clean      (the same, tracks cleaned up, phase 2 Part A)
 import os
 import sys
 import warnings
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupKFold
-from calibre.components.vid import auto_boxes_file, human_boxes_file
+from calibre.components.vid import boxes_files
 from calibre.experiments import harness
 from calibre.experiments.harness import (severe_ml, evaluate, evaluate_leave_one_site_out, failure_classifier, load_table,
                                          out_of_fold, paired_difference, ridge_on_log, scores)
@@ -162,7 +163,7 @@ def socalnet_protocol(table, boxes_file, repeats=200, deep_repeats=40):
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "human"
     parts = sys.argv[2:] or ["main", "site", "time", "nested", "twenty"]
-    boxes_file = human_boxes_file if which == "human" else auto_boxes_file
+    boxes_file = boxes_files[which]
     os.makedirs("results", exist_ok=True)
     table = build_table(boxes_file)
     print(f"{which} boxes: {len(table)} trials, {table['participant_id'].nunique()} surgeons")

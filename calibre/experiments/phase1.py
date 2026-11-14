@@ -14,7 +14,7 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import GridSearchCV, GroupKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from calibre.components.vid import auto_boxes_file, human_boxes_file
+from calibre.components.vid import boxes_files
 from calibre.experiments import harness
 from calibre.experiments.harness import evaluate, failure_classifier, paired_differences, scores, severe_ml, surgeon_bootstrap
 from calibre.experiments.new_models import add_surgeon_features, surgeon_feature_names, with_missing_filled
@@ -24,7 +24,7 @@ from calibre.models.risk_model_training import ridge_model
 warnings.filterwarnings("ignore")
 jobs = 8
 labels = os.environ.get("CALIBRE_LABELS", "human")  # an environment setting, so the worker processes see it too
-boxes_file = human_boxes_file if labels == "human" else auto_boxes_file
+boxes_file = boxes_files[labels]
 socalnet_r2, socalnet_rmse = 0.74, 295  # published: Pangal et al., Sci Rep 2022
 
 
