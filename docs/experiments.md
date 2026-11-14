@@ -52,6 +52,25 @@ All numbers come from `results/` and can be rerun with `uv run python -m calibre
 | 90 | 0.71 / 0.63 | 0.73 / 0.64 | 0.77 / 0.78 |
 | 120 | 0.64 / 0.56 | 0.72 / 0.54 | 0.72 / 0.71 |
 
+## Our models scored the way SOCALNet was scored
+
+This uses 20 random test videos and trains on the rest. The split is by video, so the same surgeon can be in both training and testing. It is repeated 200 times (40 for H), and each cell shows the median with the 5th–95th percentile range.
+
+| Method | Success accuracy | Blood loss R² | RMSE (mL) | Bleeds > 500 mL caught | Splits reaching 85% accuracy |
+|---|---|---|---|---|---|
+| SOCALNet (published, one split) | 85% | 0.74 | 295 | 80% | |
+| A. Original CALIBRE | 65% [50–85] | 0.06 [−0.56, 0.43] | 356 [233–494] | 38% | 6% |
+| B. + handling features | 70% [50–80] | 0.13 [−0.45, 0.50] | 349 [227–480] | 33% | 4% |
+| D. B + previous attempt | 75% [60–90] | 0.24 [−0.23, 0.55] | 320 [217–450] | 50% | 23% |
+| G. DINOv2 + B | 65% [50–80] | 0.25 [−0.32, 0.56] | 318 [222–438] | 43% | 4% |
+| H. SOCALNet-style re-build | 68% [50–80] | 0.12 [−0.32, 0.44] | 343 [259–480] | 50% | 0% |
+
+What this shows:
+- **None of our models, including our SOCALNet re-build, reach SOCALNet's published R² of 0.74 on any of the 200 splits.** The 85% accuracy is reached on 23% of splits for model D, and rarely for the others.
+- SOCALNet's published RMSE of 295 mL falls inside the range our best models reach (D and G, medians about 320 mL).
+- So the easier test protocol does not fully explain their published numbers. Possible reasons include differences in their exact model and training (we only have the paper's description), their specific 20 test videos, or how R² was calculated. **We cannot claim to beat the published SOCALNet. Comparing on their exact test videos with their trained model is the next step.**
+- A single 20-video test swings widely. For the same model, accuracy ranges from 50% to 90% and R² from below 0 to 0.55. This is why we report surgeon-held-out results on all 143 trials with 95% ranges.
+
 ## Fully automatic (no human tool labels)
 
 Five tool detectors are being trained, one per surgeon fold. Each labels only the surgeons it never saw. Rerunning everything on those labels (`run_experiments auto`) answers SOCALNet's other stated limitation, that it needs human tool annotations. *Results pending.*

@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn.model_selection import GroupKFold
 from calibre.components.vid import auto_boxes_file, human_boxes_file
 from calibre.experiments import harness
-from calibre.experiments.harness import (evaluate, evaluate_leave_one_site_out, failure_classifier, load_table,
+from calibre.experiments.harness import (severe_ml, evaluate, evaluate_leave_one_site_out, failure_classifier, load_table,
                                          out_of_fold, paired_difference, ridge_on_log, scores)
 from calibre.experiments.image_models import (SocalnetStyle, embedding_failure, embedding_regressor,
                                               sequence_inputs, trial_embedding_summary)
@@ -132,6 +132,32 @@ def twenty_video_spread(table, repeats=500):
         rows.append({"accuracy_on_20": ((risk > 0.5) == (test["success"].values == 0)).mean()})
     return pd.DataFrame(rows)
 
+def socalnet_protocol(table, boxes_file, repeats=200, deep_repeats=40):
+    """Score our models the way SOCALNet was scored: 20 random test videos, the rest for training,
+    split by video (the same surgeon can be in both). Repeated many times so we see the spread."""
+    from sklearn.metrics import r2_score
+    methods = {**tabular_methods(), **image_methods(boxes_file)}
+    keep = ["A. Original CALIBRE (7 features)", "B. + 10 new bleed-handling features",
+            "D. B + surgeon's previous attempt", "G. DINOv2 + B", "H. SOCALNet-style ResNet + LSTM (our re-build)"]
+    rng = np.random.default_rng(0)
+    splits = [rng.choice(len(table), size=20, replace=False) for _ in range(repeats)]
+    rows = []
+    for name in keep:
+        predict_ml, predict_failure = methods[name]
+        for split_number, test_rows in enumerate(splits[: deep_repeats if name.startswith("H") else repeats]):
+            train_rows = np.setdiff1d(np.arange(len(table)), test_rows)
+            train, test = table.iloc[train_rows], table.iloc[test_rows]
+            ml, failure = predict_ml(train, test), predict_failure(train, test)
+            blood = test["blood_loss"].values
+            severe = blood > severe_ml
+            rows.append({"method": name, "split": split_number,
+                         "success_accuracy": ((failure > 0.5) == (test["success"].values == 0)).mean(),
+                         "r2_ml": r2_score(blood, ml),
+                         "rmse_ml": np.sqrt(np.mean((ml - blood) ** 2)),
+                         "over_500_caught": (ml[severe] > severe_ml).mean() if severe.any() else np.nan})
+        print("socalnet protocol done:", name, flush=True)
+    return pd.DataFrame(rows)
+
 
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "human"
@@ -151,4 +177,6 @@ if __name__ == "__main__":
     if "twenty" in parts:
         spread = twenty_video_spread(table)
         spread.describe(percentiles=[0.05, 0.5, 0.95]).to_csv(f"results/{which}_twenty_video_spread.csv")
+    if "socalnet_protocol" in parts:
+        socalnet_protocol(table, boxes_file).to_csv(f"results/{which}_socalnet_protocol.csv", index=False)
     print("done")
