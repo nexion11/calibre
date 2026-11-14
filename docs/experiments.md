@@ -309,6 +309,44 @@ Same 200 test sets of 20 videos as in phase 1 (`results/auto_phase1_protocol.csv
 - The comparison with the published SOCALNet numbers is unchanged by removing human labels: blood-loss error is close to theirs on random test sets (304 vs 295 mL), and accuracy (70–75% vs 85%) and big bleeds caught (58% vs 80%) are still behind.
 - With a cutoff tuned in training, the automatic D1 model catches 73% of bleeds over 500 mL at 33% false alarms.
 
+### Phase 2, Part A: cleaning up the tool tracks
+
+The raw automatic labels use one confidence cutoff (0.35, the app's) for every tool and take every frame on its own. Part A re-ran each fold's detector on the surgeons it never saw, keeping weak boxes too, and picked three settings per tool. The settings are a confidence cutoff, the longest gap in a tool's track to fill in (0, 1 or 2 seconds), and the shortest run of detections to keep (1 or 2 seconds). They are judged by how well "is this tool on screen this second?" matches the human labels. **The settings used for each fold's surgeons were picked only on the other four folds' surgeons**, so no surgeon's human labels touched their own cleanup (`calibre/experiments/track_cleanup.py`, settings in `results/clean_track_settings.csv`).
+
+The picked settings were nearly the same in all 5 folds. Suction keeps a 0.25 cutoff and no smoothing. Cottonoid drops to 0.10–0.15 with 1–2 second gaps filled and one-second blips removed. Muscle uses 0.15–0.20 with 2-second gaps filled and blips removed. String drops to 0.10 with blips removed.
+
+**Per-second agreement with human labels (F1), all 22,064 seconds:**
+
+| Tool | Seconds on screen (human) | App setting (0.35) | Cleaned |
+|---|---|---|---|
+| Suction | 15,712 | 0.938 | 0.938 |
+| Grasper | 10,983 | 0.916 | 0.915 |
+| Cottonoid | 7,225 | 0.789 | **0.842** |
+| Muscle | 3,144 | 0.631 | **0.693** |
+| String | 7,976 | 0.899 | **0.911** |
+
+**Outcome prediction, same trials, paired over surgeons (`results/clean_vs_auto_paired.csv`):**
+
+| Model | Severe AUC raw → cleaned (gap [95%]) | Failure AUC raw → cleaned (gap [95%]) | RMSE mL raw → cleaned (gap [95%]) |
+|---|---|---|---|
+| A. Original 7 features | 0.744 → 0.760 (+0.021 [+0.002, +0.045]) | 0.615 → 0.617 (+0.003 [−0.021, +0.032]) | 380 → 380 (0 [−5, +7]) |
+| B. + handling features | 0.742 → 0.762 (+0.024 [+0.001, +0.048]) | 0.589 → 0.547 (−0.026 [−0.070, +0.021]) | 376 → 365 (−10 [−20, −1]) |
+| D. B + previous attempt | 0.785 → 0.806 (+0.018 [−0.006, +0.045]) | 0.764 → 0.774 (0.000 [−0.019, +0.021]) | 351 → 341 (−10 [−19, −2]) |
+| E. B + all surgeon info | 0.808 → 0.816 (+0.010 [−0.005, +0.026]) | 0.772 → 0.759 (−0.006 [−0.028, +0.018]) | 352 → 352 (0 [−5, +4]) |
+| G. DINOv2 + B | 0.798 → 0.801 (+0.005 [−0.015, +0.025]) | 0.535 → 0.504 (−0.042 [−0.121, +0.044]) | 348 → 343 (−4 [−15, +5]) |
+| DG. DINOv2 + D (phase 1 best) | 0.799 → 0.804 | 0.732 → 0.744 | 316 → 318 |
+
+The raw and cleaned columns are averages over the 10 reshuffles. The gap is from the averaged predictions, so it can differ from the plain subtraction by about 0.003. DG comes from `results/clean_phase1_held_out.csv`. Its main table is `results/clean_main.csv`.
+
+- **Cleanup lifts the weak tools' tracks.** Cottonoid agreement rose 0.79 → 0.84 and muscle 0.63 → 0.69. The tools that were already good did not move.
+- **It gives a small, real gain in blood-loss prediction for the plain feature models.** Severe AUC rose about 0.02 for A and B (ranges exclude 0), and RMSE fell about 10 mL for B and D (ranges exclude 0). With cleaned labels, D comes within 0.007 AUC and 3 mL of the same model on human labels (0.813, 338 mL).
+- **It does not change failure prediction or the best model.** DG stays at about 0.80 severe AUC and 316–318 mL, because its DINOv2 image features carry most of the signal.
+- **The 10 handling features still add nothing over the original 7 with automatic labels** (B vs A severe gap +0.004 [−0.031, +0.038]). The feature check below shows why.
+
+**How close each feature from automatic labels is to the same feature from human labels** (correlation across the 143 trials, `results/clean_feature_agreement.csv`): the blood features are identical (r = 1.00), because blood is measured from color, not from tool labels. Suction and cottonoid time, suction clearing and two-handed time agree well (r 0.82–0.94). The weak ones are **first second a cottonoid appears** (r 0.40 raw, 0.48 cleaned), **first second a grasper appears** (0.48, 0.42) and **tool switches per second** (0.66, 0.67). A single early false detection sets a "first second" feature wrong, and every blip counts as a switch. These are where better detection, or features less sensitive to single frames, would help most.
+
+Decision: the cleaned labels become the automatic default (`clean` label set), since they are never worse in a way the ranges can show, and they are better for blood loss in the plain models. Part B (the detector search on the PC) is running now.
+
 ## Limitations
 
 - These are cadaver simulation trials only, with 143 trials from 73 surgeons, so the 95% ranges are wide.

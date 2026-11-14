@@ -1,0 +1,21 @@
+A. Original CALIBRE (7 features)
+B. + 10 new bleed-handling features
+D. B + surgeon's previous attempt
+E. B + all surgeon information
+G. DINOv2 + B
+                             method      metric    auto   clean    gap     low   high
+   A. Original CALIBRE (7 features)  severe_auc   0.744   0.760  0.021   0.002  0.045
+   A. Original CALIBRE (7 features) failure_auc   0.615   0.617  0.003  -0.021  0.032
+   A. Original CALIBRE (7 features)     rmse_ml 380.192 380.316  0.145  -5.198  6.963
+B. + 10 new bleed-handling features  severe_auc   0.742   0.762  0.024   0.001  0.048
+B. + 10 new bleed-handling features failure_auc   0.589   0.547 -0.026  -0.070  0.021
+B. + 10 new bleed-handling features     rmse_ml 376.267 365.265 -9.641 -19.570 -0.694
+  D. B + surgeon's previous attempt  severe_auc   0.785   0.806  0.018  -0.006  0.045
+  D. B + surgeon's previous attempt failure_auc   0.764   0.774  0.000  -0.019  0.021
+  D. B + surgeon's previous attempt     rmse_ml 351.414 340.701 -9.638 -19.292 -2.322
+     E. B + all surgeon information  severe_auc   0.808   0.816  0.010  -0.005  0.026
+     E. B + all surgeon information failure_auc   0.772   0.759 -0.006  -0.028  0.018
+     E. B + all surgeon information     rmse_ml 352.135 351.692 -0.140  -4.736  3.858
+                      G. DINOv2 + B  severe_auc   0.798   0.801  0.005  -0.015  0.025
+                      G. DINOv2 + B failure_auc   0.535   0.504 -0.042  -0.121  0.044
+                      G. DINOv2 + B     rmse_ml 348.275 342.673 -3.834 -14.786  5.347

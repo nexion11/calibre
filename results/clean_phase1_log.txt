@@ -1,0 +1,14 @@
+clean labels: 143 trials, 73 surgeons
+done: D. B + previous attempt, log target (current)
+done: D1. D with square-root target
+done: B. Video only, log target (current)
+done: E1. B + all surgeon information (143 trials only)
+done: D2. D with two-part blood model
+done: G1. DINOv2 + B
+done: DG. DINOv2 + D
+done: P1. B + previous-attempt prior from all 365 trials
+done: P2. D + previous-attempt prior from all 365 trials
+done: P3. B + all-surgeon-information prior from all 365 trials
+done: PG. DINOv2 + P1
+done: H. SOCALNet-style ResNet + LSTM (our re-build)
+done

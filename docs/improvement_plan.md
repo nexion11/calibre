@@ -60,11 +60,11 @@ The detector feeds everything else, and it is the one place we already beat a pu
 | # | Experiment | Why | Success bar |
 |---|---|---|---|
 | 2.1 | Held-out mAP50 on all 73 surgeons from the 5 cross-fitted YOLO11n detectors | The honest baseline; every surgeon scored by a detector that never saw them | Stays ≥ 0.72 |
-| 2.2 | Size and resolution test on fold 0: YOLO11 n / s / m, image size 640 vs. 960, all frames, 60 rounds | Ours was the smallest model, on every 4th frame, and still improving at round 20 | Best setup ≥ 0.80 on fold 0 |
+| 2.2 | Size and resolution test on fold 0: YOLO11 n / s / m, image size 640 vs. 960, all frames, 30 rounds (cut from 60 to fit the GPU; still about 6x the training of the current detector). 960 px and 2.3 run on the best phone-speed model (n or s) | Ours was the smallest model, on every 4th frame, and still improving at round 20 | Best setup ≥ 0.80 on fold 0 |
 | 2.3 | Rare-tool fixes: oversample frames with muscle and cottonoid, copy-paste augmentation | Muscle is 0.42 and cottonoid 0.66 | Muscle ≥ 0.55, cottonoid ≥ 0.72 |
 | 2.4 | RetinaNet trained by us on the same fold-0 split | Their 0.67 was on a split they did not describe. This makes the comparison same-data, same-surgeons | Paired gap with a range |
 | 2.5 | Best setup trained on all 5 folds, new auto labels written | Needed for the fully automatic pipeline | mAP50 ≥ 0.80, lower end of range above 0.67 |
-| 2.6 | Smoothing over time: fill 1–2 second gaps in a tool's track | Outcome features need per-second presence, not per-frame boxes | Per-second presence F1 up |
+| 2.6 | Smoothing over time: fill 1–2 second gaps in a tool's track | Outcome features need per-second presence, not per-frame boxes | Per-second presence F1 up. **Done:** cottonoid 0.79 → 0.84, muscle 0.63 → 0.69; blood-loss RMSE −10 mL for D (range excludes 0); handling features still add nothing |
 | 2.7 | iPhone export check: accuracy after Core ML conversion at 16-bit and 8-bit | Proves the deployed model matches the reported one | Drop under 0.01 mAP50 |
 
 ### Phase 3. Richer inputs (Mac, about 1 day)
