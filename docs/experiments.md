@@ -219,7 +219,95 @@ DG is clearly better than the re-build on all three scores when both are tested 
 
 ## Fully automatic (no human tool labels)
 
-Five tool detectors are being trained, one per surgeon fold. Each labels only the surgeons it never saw. Rerunning everything on those labels (`run_experiments auto`) answers SOCALNet's other stated limitation, that it needs human tool annotations. *Results pending.*
+SOCALNet's paper lists its need for human tool annotations as a limitation. Here no human label is used at test time. Five YOLO11n tool detectors were trained, one per surgeon fold, each on the other four folds. Every surgeon's video is then labeled only by the detector that never saw that surgeon, and every experiment above is rerun on those labels (`run_experiments auto`, and `CALIBRE_LABELS=auto` for phase 1).
+
+### The detectors, scored on surgeons they never saw
+
+Each fold's detector is scored on every hand-labeled frame of its 15 unseen surgeons, so all 75 surgeons and 31,443 frames are scored once (`uv run python -m calibre.experiments.detector_check`, numbers in `results/auto_detector_unseen_surgeons.csv`).
+
+| Fold | Frames | mAP50 | Suction | Grasper | Cottonoid | String | Muscle |
+|---|---|---|---|---|---|---|---|
+| 0 | 6,062 | 0.797 | 0.954 | 0.917 | 0.694 | 0.812 | 0.610 |
+| 1 | 6,201 | 0.784 | 0.946 | 0.911 | 0.719 | 0.848 | 0.497 |
+| 2 | 6,239 | 0.725 | 0.900 | 0.876 | 0.624 | 0.731 | 0.496 |
+| 3 | 6,649 | 0.794 | 0.966 | 0.947 | 0.728 | 0.836 | 0.493 |
+| 4 | 6,292 | 0.775 | 0.955 | 0.905 | 0.632 | 0.834 | 0.548 |
+| **Average of 5 folds** | 31,443 | **0.775** | **0.944** | **0.911** | **0.679** | **0.812** | **0.529** |
+| SOCAL RetinaNet (published) | 14 test trials | 0.67 | 0.91 | 0.77 | 0.52 | 0.50 | 0.25 |
+
+- **Every fold beats the published 0.67, and every tool is higher on average.** The weakest fold is 0.725. Muscle is still the hardest tool (0.53) but is twice the published score.
+- This is a stricter test than the 0.75 we reported before, which came from one split. The plan's bar for this check (2.1, at least 0.72) is met.
+- The published number is from a different split that the paper does not describe, so this is not yet a same-data comparison. Training their RetinaNet on our folds (plan item 2.4) would make it one.
+- These detectors trained for 20 rounds on the smallest YOLO11 model. Phase 2 of the plan tests larger models and longer training.
+
+### Outcome prediction with automatic labels
+
+Same 143 trials, 73 surgeons and tests as above. "Human" uses the hand-drawn tool boxes. "Auto" uses only boxes from the detector that never saw that surgeon. Ranges are 95%, from resampling surgeons.
+
+| Method | Severe AUC, human | Severe AUC, auto [95%] | Failure AUC, human | Failure AUC, auto [95%] | RMSE mL, auto |
+|---|---|---|---|---|---|
+| A. Original CALIBRE | 0.757 | 0.744 [0.66–0.82] | 0.636 | 0.615 [0.56–0.75] | 380 |
+| B. + handling features | 0.781 | 0.742 [0.66–0.83] | 0.652 | 0.589 [0.51–0.71] | 376 |
+| C. B with survival model | 0.781 | 0.746 [0.66–0.83] | 0.693 | 0.680 [0.58–0.77] | 365 |
+| D. B + previous attempt | 0.813 | 0.785 [0.71–0.86] | 0.792 | 0.764 [0.70–0.85] | 351 |
+| E. B + all surgeon information | 0.819 | 0.808 [0.74–0.88] | 0.745 | 0.772 [0.69–0.87] | 352 |
+| F. DINOv2 only (uses no tool labels) | 0.786 | 0.786 [0.71–0.86] | 0.467 | 0.467 | 344 |
+| G. DINOv2 + B | 0.810 | 0.798 [0.72–0.87] | 0.553 | 0.535 | 348 |
+| H. SOCALNet-style re-build | 0.740 | 0.742 [0.66–0.83] | 0.638 | 0.633 [0.56–0.73] | 350 |
+
+The phase 1 models, rerun on automatic labels (`results/auto_phase1_held_out.csv`):
+
+| Method | Severe AUC, human → auto | Failure AUC, human → auto | RMSE mL, human → auto | R² in mL, human → auto |
+|---|---|---|---|---|
+| B. Video only (log) | 0.781 → 0.742 | 0.652 → 0.589 | 360 → 376 | 0.13 → 0.05 |
+| D. B + previous attempt (log) | 0.813 → 0.785 | 0.792 → 0.764 | 338 → 351 | 0.24 → 0.17 |
+| D1. D, square root | 0.803 → 0.774 | 0.792 → 0.764 | 322 → 334 | 0.30 → 0.25 |
+| P3. B + all-surgeon-information prior from all 365 trials | 0.790 → 0.770 | 0.723 → 0.703 | 323 → 326 | 0.30 → 0.29 |
+| E1. B + all surgeon information (143 trials) | 0.804 → 0.789 | 0.745 → 0.772 | 332 → 339 | 0.26 → 0.23 |
+| G1. DINOv2 + B (video only) | 0.803 → 0.784 | 0.553 → 0.535 | 318 → 323 | 0.33 → 0.30 |
+| **DG. DINOv2 + D** | **0.818 → 0.799 [0.73–0.88]** | 0.738 → 0.732 | **312 → 316** | **0.35 → 0.33** |
+| PG. DINOv2 + P1 | 0.812 → 0.796 | 0.635 → 0.586 | 310 → 316 | 0.36 → 0.33 |
+| H. SOCALNet-style re-build | 0.740 → 0.742 | 0.638 → 0.633 | 349 → 350 | 0.19 → 0.18 |
+
+What this shows:
+- **The model we carry forward (DG for blood loss, D for failure) works with no human labels: severe AUC 0.80, failure AUC 0.76, RMSE 316 mL.** With human labels it scores 0.82, 0.79 and 312. So removing the human annotator costs about 0.02 to 0.03 AUC and 4 mL.
+- **It still beats the SOCALNet-style re-build on all three scores, and all three ranges exclude zero.** DG against H on automatic labels: severe AUC +0.059 [+0.002, +0.123], failure AUC +0.120 [+0.037, +0.208], RMSE −25 mL [−45, −4]. D's failure classifier against H: +0.134 [+0.040, +0.225].
+- **The cost falls on the tool-handling features.** With human labels the 10 new handling features lift A to B (0.757 to 0.781 severe AUC). With automatic labels they add nothing (0.744 to 0.742), and B's failure AUC drops from 0.652 to 0.589. These features count cottonoid and muscle use, the two tools the detector finds least well (0.68 and 0.53). Better detection of those two is the clearest way to close the gap, which is what phase 2 of the plan tests.
+- Models that lean on the surgeon's history or on DINOv2 frame features lose the least (E: 0.819 to 0.808, DG: 0.818 to 0.799). The square-root target still lowers error on automatic labels (D to D1: −15 mL [−32, +2]), and DG is still the best blood-loss model (−35 mL against D [−58, −10]).
+
+Other checks, human → auto:
+
+| Check | Human labels | Automatic labels |
+|---|---|---|
+| Best-of chosen inside training (nested), severe / failure AUC | 0.807 / 0.792 | 0.790 / 0.771 |
+| Leave one course site out, D, severe / failure AUC | 0.762 / 0.772 | 0.716 / 0.768 |
+| Leave one course site out, E, severe / failure AUC | 0.775 / 0.759 | 0.759 / 0.776 |
+| D after only 15 s of video, severe / failure AUC | 0.713 / 0.758 | 0.732 / 0.755 |
+| D after 45 s of video, severe / failure AUC | 0.788 / 0.806 | 0.756 / 0.798 |
+| D failure call (risk above 0.5): accuracy / caught / false alarms | 76% / 54% / 12% | 73% / 45% / 12% |
+| D over 500 mL, cutoff tuned in training: accuracy / caught / false alarms | 75% / 72% / 24% | 70% / 68% / 29% |
+
+### Automatic labels, scored SOCALNet's way
+
+Same 200 test sets of 20 videos as in phase 1 (`results/auto_phase1_protocol.csv`). Cells show the median with the 5th–95th percentile range.
+
+| Test sets | Method | Success accuracy | RMSE (mL) | R² | Squared correlation | Bleeds > 500 mL caught | Sets at or under 295 mL |
+|---|---|---|---|---|---|---|---|
+| | SOCALNet (published, one set) | 85% | 295 | | 0.74 | 80% | |
+| Random | D, human labels | 75% [60–90] | 320 [217–450] | 0.24 | 0.38 | 47% | 38% |
+| Random | D, automatic | 75% [55–90] | 336 [224–465] | 0.17 | 0.30 | 47% | 27% |
+| Random | DG, human labels | 70% [55–90] | 299 [201–412] | 0.37 | 0.43 | 58% | 48% |
+| Random | **DG, automatic** | 70% [55–85] | **304 [202–411]** | 0.35 | 0.41 | 58% | 44% |
+| Random | H re-build, automatic | 65% [50–75] | 352 [258–473] | 0.17 | 0.29 | 45% | 15% |
+| Balanced like theirs | D, human labels | 70% [55–85] | 357 [236–500] | 0.17 | 0.37 | 46% | 22% |
+| Balanced like theirs | D, automatic | 70% [55–80] | 372 [245–492] | 0.12 | 0.32 | 48% | 17% |
+| Balanced like theirs | DG, human labels | 65% [55–80] | 328 [217–448] | 0.34 | 0.45 | 57% | 32% |
+| Balanced like theirs | **DG, automatic** | 60% [55–80] | **323 [215–439]** | 0.34 | 0.44 | 58% | 31% |
+| Balanced like theirs | H re-build, automatic | 60% [50–70] | 347 [244–450] | 0.21 | 0.38 | 49% | 20% |
+
+- **Scored their way, the fully automatic model gives 75% accuracy (D) and 304 mL RMSE (DG) on random test sets, and 70% and 323 mL on sets balanced like theirs.** That is within 5 mL of the human-label result in both designs.
+- The comparison with the published SOCALNet numbers is unchanged by removing human labels: blood-loss error is close to theirs on random test sets (304 vs 295 mL), and accuracy (70–75% vs 85%) and big bleeds caught (58% vs 80%) are still behind.
+- With a cutoff tuned in training, the automatic D1 model catches 73% of bleeds over 500 mL at 33% false alarms.
 
 ## Limitations
 

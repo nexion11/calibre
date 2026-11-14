@@ -1,0 +1,57 @@
+auto labels: 143 trials, 73 surgeons
+done: D: log, corrected
+done: D: log (current)
+done: D: square root, corrected
+done: D: plain mL
+done: D: square root
+done: D: Huber loss
+done: D: gamma model
+done: D: two-part
+done: B: plain mL
+done: B: log (current)
+done: B: log, corrected
+done: B: square root, corrected
+done: B: square root
+done: B: Huber loss
+done: B: gamma model
+done: B: two-part
+done: D. B + previous attempt, log target (current)
+done: D1. D with square-root target
+done: B. Video only, log target (current)
+done: E1. B + all surgeon information (143 trials only)
+done: D2. D with two-part blood model
+done: G1. DINOv2 + B
+done: DG. DINOv2 + D
+done: P1. B + previous-attempt prior from all 365 trials
+done: P2. D + previous-attempt prior from all 365 trials
+done: P3. B + all-surgeon-information prior from all 365 trials
+done: PG. DINOv2 + P1
+done: H. SOCALNet-style ResNet + LSTM (our re-build)
+done: D. B + previous attempt, log target (current) over 500 mL mL estimate above 500
+done: D1. D with square-root target over 500 mL mL estimate above 500
+done: D. B + previous attempt, log target (current) over 500 mL mL cutoff tuned in training
+done: D1. D with square-root target over 500 mL mL cutoff tuned in training
+done: D. B + previous attempt, log target (current) over 500 mL own classifier, risk above 0.5
+done: D. B + previous attempt, log target (current) failure risk above 0.5
+done: D1. D with square-root target failure risk above 0.5
+done: D1. D with square-root target over 500 mL own classifier, risk above 0.5
+done: P1. B + previous-attempt prior from all 365 trials over 500 mL mL estimate above 500
+done: P1. B + previous-attempt prior from all 365 trials failure risk above 0.5
+done: P1. B + previous-attempt prior from all 365 trials over 500 mL own classifier, risk above 0.5
+done: D1. D with square-root target failure cutoff tuned in training
+done: D. B + previous attempt, log target (current) failure cutoff tuned in training
+done: D. B + previous attempt, log target (current) over 500 mL own classifier, cutoff tuned in training
+done: D1. D with square-root target over 500 mL own classifier, cutoff tuned in training
+done: P1. B + previous-attempt prior from all 365 trials over 500 mL mL cutoff tuned in training
+done: P1. B + previous-attempt prior from all 365 trials failure cutoff tuned in training
+done: P1. B + previous-attempt prior from all 365 trials over 500 mL own classifier, cutoff tuned in training
+[Parallel(n_jobs=8)]: Using backend LokyBackend with 8 concurrent workers.
+[Parallel(n_jobs=8)]: Done   56 out of 4480 | elapsed:    0.7s
+[Parallel(n_jobs=8)]: Done  536 out of 4480 | elapsed:   20.1s
+[Parallel(n_jobs=8)]: Done  786 out of 4480 | elapsed:   29.4s
+[Parallel(n_jobs=8)]: Done 1136 out of 4480 | elapsed:  1.4min
+[Parallel(n_jobs=8)]: Done 1724 out of 4480 | elapsed:  1.6min
+[Parallel(n_jobs=8)]: Done 2784 out of 4480 | elapsed:  3.9min
+[Parallel(n_jobs=8)]: Done 3434 out of 4480 | elapsed:  5.1min
+[Parallel(n_jobs=8)]: Done 4480 out of 4480 | elapsed:  7.5min finished
+done

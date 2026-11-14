@@ -8,7 +8,7 @@ Written 2026-11-14. Current results are in `docs/experiments.md`. This is what t
 
 | Scoreboard | Original SOCAL | Before | After phase 1 | Status |
 |---|---|---|---|---|
-| Tool detection, mAP50 | 0.67 (RetinaNet) | 0.75 (YOLO11n) | 0.75 | ahead, every tool higher |
+| Tool detection, mAP50 | 0.67 (RetinaNet) | 0.75 (YOLO11n, one split) | 0.775 on all 75 surgeons, each scored by a detector that never saw them | ahead, every tool higher (plan item 2.1 done) |
 | Blood loss error under their test, RMSE | 295 mL | 320 mL | 299 mL on random test sets, 328 mL on sets balanced like theirs | level on random sets, 33 mL behind on balanced sets |
 | Blood loss R² under their test | 0.74 (a squared correlation) | 0.25 | squared correlation 0.43 to 0.45, R² 0.33 to 0.37 | not comparable (see 2a) |
 | Success accuracy under their test | 85% | 75% | 75% random, 70% balanced | behind |
@@ -16,7 +16,7 @@ Written 2026-11-14. Current results are in `docs/experiments.md`. This is what t
 | Severe-bleed AUC, surgeons held out | not reported | 0.81 | 0.82 | no published number to beat |
 | Failure AUC, surgeons held out | not reported | 0.79 | 0.79 | no published number to beat |
 | Blood loss RMSE, surgeons held out | not reported | 338 mL | 312 mL | clear gain (−24 mL, range −39 to −8) |
-| Works with no human tool labels | no | pending | tool labels made for all 75 surgeons by detectors that never saw them; outcome results running | see `docs/experiments.md` |
+| Works with no human tool labels | no | pending | yes: severe AUC 0.80, failure AUC 0.76, RMSE 316 mL fully automatic (0.82, 0.79, 312 with human labels); 304 mL under their test on random sets | ahead; costs about 0.02 to 0.03 AUC and 4 mL |
 
 ## 2. What is holding us back
 
