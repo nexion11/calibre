@@ -6,12 +6,15 @@ watch_seconds = 60  # only wacth 60 sec
 default_vid_width = 1920 
 
 
-def load_tool_boxes():
-    tool_boxes = pd.read_csv(
-        "data/socal.csv",
-        header=None,
-        names=["frame", "x1", "y1", "x2", "y2", "label"],
-    )
+human_boxes_file = "data/socal.csv"
+auto_boxes_file = "data/auto_boxes.csv"  # from calibre/experiments/fold_detectors.py, no human labels
+
+
+def load_tool_boxes(boxes_file=human_boxes_file):
+    if boxes_file == human_boxes_file:
+        tool_boxes = pd.read_csv(boxes_file, header=None, names=["frame", "x1", "y1", "x2", "y2", "label"])
+    else:
+        tool_boxes = pd.read_csv(boxes_file)
     
     frame_to_trial = pd.read_csv("data/frame_to_trial_mapping.csv")
     return tool_boxes.merge(frame_to_trial, on="frame", how="left")
@@ -86,9 +89,9 @@ def tool_features_trial(trial_boxes, video_width):
 
 
 
-def build_feature_table(watch_seconds=watch_seconds, start_second=0):
+def build_feature_table(watch_seconds=watch_seconds, start_second=0, boxes_file=human_boxes_file):
 
-    tool_boxes = load_tool_boxes()
+    tool_boxes = load_tool_boxes(boxes_file)
     in_window = (tool_boxes["frame_number"] > start_second) & (tool_boxes["frame_number"] <= watch_seconds)
     early_boxes = tool_boxes[in_window]
     outcomes = pd.read_csv("data/socal_outcomes.csv")

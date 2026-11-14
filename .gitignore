@@ -10,3 +10,6 @@ models/detector/
 models_detector_log.txt
 runs/
 submission/
+data/yolo_folds/
+models/fold_detectors/
+models/fold_detectors_log.txt
