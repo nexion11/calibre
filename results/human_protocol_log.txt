@@ -1,0 +1,7 @@
+human boxes: 143 trials, 73 surgeons
+socalnet protocol done: A. Original CALIBRE (7 features)
+socalnet protocol done: B. + 10 new bleed-handling features
+socalnet protocol done: D. B + surgeon's previous attempt
+socalnet protocol done: G. DINOv2 + B
+socalnet protocol done: H. SOCALNet-style ResNet + LSTM (our re-build)
+done

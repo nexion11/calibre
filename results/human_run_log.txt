@@ -1,0 +1,10 @@
+human boxes: 143 trials, 73 surgeons
+running A. Original CALIBRE (7 features)
+running B. + 10 new bleed-handling features
+running C. B with survival (rate x time) model
+running D. B + surgeon's previous attempt
+running E. B + all surgeon information
+running F. DINOv2 frame features only
+running G. DINOv2 + B
+running H. SOCALNet-style ResNet + LSTM (our re-build)
+done

@@ -15,8 +15,10 @@ All numbers come from `results/` and can be rerun with `uv run python -m calibre
 | | SOCAL result | How it was tested |
 |---|---|---|
 | Tool detection (RetinaNet) | mAP50 0.67, by tool 0.91 / 0.77 / 0.52 / 0.50 / 0.25 (suction / grasper / cottonoid / string / muscle) | 14 test trials, split not described |
-| SOCALNet outcome | 85% correct (17/20) on success, blood loss R² 0.74 | 20 random test videos, not split by surgeon, needs human tool labels as input |
-| Expert surgeons | 69% correct, caught 47.5% of bleeds over 500 mL | same 20 videos |
+| SOCALNet outcome | 85% correct (17/20) on success, blood loss RMSE 295 mL, R² 0.74, caught 8 of 10 bleeds over 500 mL | 20 test videos picked to balance outcomes (11 controlled, 9 failed), not split by surgeon, needs human tool labels as input |
+| Expert surgeons | 69% correct (55/80), RMSE 351 mL, caught 47.5% of bleeds over 500 mL | same 20 videos |
+
+SOCALNet's numbers and test design are according to PubMed (Pangal et al., Sci Rep 2022, [DOI](https://doi.org/10.1038/s41598-022-11549-2)). The paper reports blood loss with RMSE and Pearson's correlation, so its R² is a squared correlation and not 1 − error/variance.
 
 ## Results (human tool labels, held-out surgeons)
 
@@ -68,8 +70,152 @@ This uses 20 random test videos and trains on the rest. The split is by video, s
 What this shows:
 - **None of our models, including our SOCALNet re-build, reach SOCALNet's published R² of 0.74 on any of the 200 splits.** The 85% accuracy is reached on 23% of splits for model D, and rarely for the others.
 - SOCALNet's published RMSE of 295 mL falls inside the range our best models reach (D and G, medians about 320 mL).
-- So the easier test protocol does not fully explain their published numbers. Possible reasons include differences in their exact model and training (we only have the paper's description), their specific 20 test videos, or how R² was calculated. **We cannot claim to beat the published SOCALNet. Comparing on their exact test videos with their trained model is the next step.**
+- So the easier test protocol does not fully explain their published numbers. Phase 1 below looks at two reasons, how R² was calculated and how the 20 test videos were picked. **We cannot claim to beat the published SOCALNet. Comparing on their exact test videos with their trained model is the next step.**
 - A single 20-video test swings widely. For the same model, accuracy ranges from 50% to 90% and R² from below 0 to 0.55. This is why we report surgeon-held-out results on all 143 trials with 95% ranges.
+
+## Phase 1: a fairer comparison with SOCALNet and a better blood-loss estimate
+
+Rerun with `uv run python -m calibre.experiments.phase1`. Numbers are in `results/human_phase1_*.csv`. The plan and the success bars are in `docs/improvement_plan.md`.
+
+### 1.1 Why SOCALNet's R² of 0.74 cannot be compared with ours
+
+R² (as 1 − error/variance) and RMSE together fix how spread out the test videos' blood loss must be. An R² of 0.74 at an RMSE of 295 mL needs a spread (standard deviation) of 579 mL. We drew 10,000 test sets of 20 videos from our 143 trials, both at random and the way SOCALNet's was built (11 controlled, 9 failed).
+
+| 20-video test set | Spread of blood loss, 5th / median / 95th percentile | Sets with a spread of 579 mL or more | R² that an RMSE of 295 mL gives on the median set |
+|---|---|---|---|
+| Random | 250 / 371 / 496 mL | 0.1% | 0.37 |
+| 11 controlled + 9 failed | 277 / 395 / 509 mL | 0.2% | 0.44 |
+
+- Balancing the test set by outcome does not explain it. It raises the spread only a little.
+- A squared correlation is always at least as high as R², because it ignores predictions that run too high or too low. For our best blood-loss model the median squared correlation on 20 videos is 0.43 and the R² is 0.37. 1% of test sets reach a squared correlation of 0.74.
+- **RMSE is the number that can be compared fairly.** The R² gap is a question for the lab, not evidence that either result is wrong.
+
+### 1.2 and 1.3 What the blood-loss model learns
+
+Our model learned log(blood loss), which predicts a typical value and runs low on big bleeds. Same features as D, surgeons held out:
+
+| The model learns | RMSE (mL) | R² in mL | Severe-bleed AUC | RMSE gap vs log [95%] |
+|---|---|---|---|---|
+| log (what we had) | 338 | 0.24 | 0.813 | |
+| log, corrected to the right average | 342 | 0.22 | 0.813 | +1 [−20, +28] |
+| **square root** | **322** | **0.30** | 0.803 | **−14 [−25, −1]** |
+| square root, corrected | 320 | 0.31 | 0.803 | −17 [−33, +4] |
+| plain mL | 324 | 0.30 | 0.789 | −13 [−33, +13] |
+| gamma model | 325 | 0.29 | 0.795 | −14 [−28, 0] |
+| Huber loss | 331 | 0.27 | 0.796 | −6 [−21, +11] |
+| two-part (controlled vs. failed) | 333 | 0.26 | 0.792 | −6 [−24, +14] |
+
+- **The square root is the only change whose gain is clear**, and it holds on the video-only features too (B: 360 → 335 mL, gap −23 [−34, −9]). It costs nothing real in ranking.
+- The two-part model (1.3) did not beat it. That is a negative result.
+
+### New models, surgeons held out
+
+All blood-loss models below learn the square root unless marked. "Prior from all 365 trials" means the surgeon part of the model is fitted on every trial in `socal_outcomes.csv`, including the 222 with no video, and never on the test surgeons.
+
+| Method | Severe-bleed AUC [95%] | Failure AUC [95%] | False alarms at 75% caught | RMSE (mL) | R² in mL |
+|---|---|---|---|---|---|
+| B. Video only (log) | 0.781 [0.70–0.86] | 0.652 [0.59–0.77] | 27% | 360 | 0.13 |
+| D. B + previous attempt (log) | 0.813 [0.74–0.89] | 0.792 [0.71–0.87] | 25% | 338 | 0.24 |
+| D1. D, square root | 0.803 [0.73–0.87] | 0.792 | 28% | 322 | 0.30 |
+| D2. D, two-part | 0.792 | 0.792 | 33% | 333 | 0.26 |
+| P1. B + previous-attempt prior from all 365 trials | 0.801 | 0.706 [0.66–0.82] | 26% | 322 | 0.31 |
+| P2. D + that prior | 0.803 | 0.792 [0.72–0.88] | 27% | 323 | 0.30 |
+| P3. B + all-surgeon-information prior from all 365 trials | 0.790 | 0.723 | 31% | 323 | 0.30 |
+| E1. B + all surgeon information (143 trials) | 0.804 | 0.745 | 31% | 332 | 0.26 |
+| G1. DINOv2 + B (video only) | 0.803 | 0.553 | 25% | 318 | 0.33 |
+| **DG. DINOv2 + D** | **0.818 [0.75–0.89]** | 0.738 [0.69–0.86] | **25%** | **312** | **0.35** |
+| PG. DINOv2 + P1 | 0.812 | 0.635 | 25% | 310 | 0.36 |
+| H. SOCALNet-style re-build | 0.740 [0.66–0.83] | 0.638 [0.58–0.74] | 38% | 349 | 0.19 |
+
+- **Best blood-loss estimate: DG.** Against D it lowers RMSE by 24 mL [−39, −8] with no real change in severe AUC (+0.008 [−0.02, +0.04]) or failure AUC (−0.018 [−0.05, +0.01]).
+- **Best failure prediction is still D's classifier** (0.792). DINOv2 features do not help failure, as before.
+- So the model we carry forward estimates blood loss with DG and failure risk with D.
+
+### 1.4 Turning the numbers into yes/no calls
+
+SOCALNet is scored on yes/no calls, and we caught few big bleeds because we cut a low-running mL estimate at 500. "Tuned cutoff" picks the cutoff inside the training surgeons only.
+
+| Call | Rule | Accuracy | Caught | False alarms |
+|---|---|---|---|---|
+| Failure (D) | risk above 0.5 | 76% [70–83] | 53% | 12% |
+| Failure (D) | tuned cutoff | 75% | 54% | 13% |
+| Over 500 mL (D, log) | estimate above 500 mL | 73% | 45% [33–56] | 12% |
+| Over 500 mL (D, log) | tuned cutoff | 75% [68–81] | 72% [62–81] | 24% [15–33] |
+| Over 500 mL (D1, square root) | estimate above 500 mL | 75% | 58% | 15% |
+| Over 500 mL (D1, square root) | tuned cutoff | 74% | 70% | 24% |
+| Over 500 mL (D) | separate classifier, tuned cutoff | 70% | 68% | 30% |
+
+- A tuned cutoff catches 70–72% of bleeds over 500 mL (up from 45%) at about the same accuracy. The price is twice the false alarms.
+- A separate over-500 classifier is no better than cutting the mL estimate.
+- Accuracy stays at 75–76%. The bar of 78% was not met.
+
+### 1.5 Using all 365 SOCAL trials
+
+`socal_outcomes.csv` holds 365 trials from 177 surgeons. These tests use outcomes and surgeon information only, with no video.
+
+| Test | Trials | Severe-bleed AUC [95%] | Failure AUC [95%] | Spearman | RMSE (mL) |
+|---|---|---|---|---|---|
+| All trials, previous attempt only | 365 | 0.706 | 0.543 | 0.45 | 326 |
+| All trials, all surgeon information | 365 | 0.741 [0.69–0.80] | 0.700 | 0.52 | 320 |
+| Second and third attempts, previous attempt only | 188 | 0.837 [0.76–0.91] | see note | 0.59 | 283 |
+| **Trained on surgeons with video, tested on 103 surgeons with no video** | 115 | **0.862 [0.77–0.94]** | **0.722 [0.57–0.85]** | 0.56 [0.42–0.69] | 241 |
+
+- **The previous-attempt finding replicates on surgeons we never used before.** A model fitted on the 73 later attempts by surgeons with video predicts the later attempts of 103 other surgeons at 0.86 severe AUC.
+- Note on the third row: only 21 of those 188 trials failed, so the failure classifier falls back to a near-constant guess whose level changes from fold to fold. Its failure AUC (0.42) is an artifact of that and says nothing either way.
+- **Adding this prior to the video model did not raise failure AUC** (P2 0.792 vs D 0.792, gap +0.005 [−0.004, +0.014]). It lowers RMSE by 13 mL [−25, −1]. The bar of 0.82 was not met.
+
+### 1.6 Our models against the SOCALNet-style re-build, paired
+
+| Ours vs H | Severe-bleed AUC gap [95%] | Failure AUC gap [95%] | RMSE gap (mL) [95%] |
+|---|---|---|---|
+| D | +0.066 [−0.02, +0.15] | **+0.134 [+0.03, +0.23]** | −2 [−32, +23] |
+| P2 | | **+0.138 [+0.04, +0.23]** | |
+| **DG** | **+0.074 [+0.01, +0.15]** | **+0.115 [+0.02, +0.20]** | **−27 [−50, −4]** |
+
+DG is clearly better than the re-build on all three scores when both are tested on the same held-out surgeons. H is our re-build from the paper's description, not their trained model.
+
+### Scored SOCALNet's way, with both kinds of test set
+
+200 test sets of 20 videos (40 for H), split by video. Each cell is the median with the 5th–95th percentile; "caught" is the average.
+
+**Random 20 videos**
+
+| Method | Success accuracy | RMSE (mL) | R² | Squared correlation | Bleeds > 500 mL caught | Sets with RMSE ≤ 295 |
+|---|---|---|---|---|---|---|
+| SOCALNet (published, one balanced set) | 85% | 295 | | 0.74 | 80% | |
+| B. Video only (log) | 70% [50–80] | 349 [227–480] | 0.13 | 0.31 | 36% | 28% |
+| D. B + previous attempt (log) | 75% [60–90] | 320 [217–450] | 0.24 | 0.38 | 47% | 38% |
+| D1. D, square root | 75% [60–90] | 307 [202–443] | 0.29 | 0.37 | 58% (69% tuned) | 45% |
+| DG. DINOv2 + D | 70% [55–90] | 299 [201–412] | 0.37 | 0.43 | 58% | 48% |
+| **Carried forward (DG blood loss, D success)** | **75% [60–90]** | **299 [201–412]** | **0.37** | **0.43** | **58%** | **48%** |
+| H. SOCALNet-style re-build | 68% [50–80] | 343 [259–480] | 0.12 | 0.28 | 46% | 10% |
+
+**11 controlled + 9 failed, as SOCALNet's test set was built**
+
+| Method | Success accuracy | RMSE (mL) | R² | Squared correlation | Bleeds > 500 mL caught | Sets with RMSE ≤ 295 |
+|---|---|---|---|---|---|---|
+| SOCALNet (published) | 85% | 295 | | 0.74 | 80% | |
+| B. Video only (log) | 60% [50–75] | 378 [259–536] | 0.04 | 0.28 | 36% | 15% |
+| D. B + previous attempt (log) | 70% [55–85] | 357 [236–500] | 0.17 | 0.37 | 46% | 22% |
+| D1. D, square root | 70% [55–85] | 338 [219–476] | 0.27 | 0.39 | 58% (70% tuned) | 27% |
+| DG. DINOv2 + D | 65% [55–80] | 328 [217–448] | 0.33 | 0.45 | 57% | 32% |
+| **Carried forward (DG blood loss, D success)** | **70% [55–85]** | **328 [217–448]** | **0.33** | **0.45** | **57%** | **32%** |
+| H. SOCALNet-style re-build | 60% [50–70] | 362 [231–447] | 0.19 | 0.36 | 48% | 25% |
+
+- **On random test sets our blood-loss error now matches SOCALNet's** (299 vs 295 mL, down from 320), and about half of all test sets come in at or under 295.
+- **On test sets balanced like theirs we are still behind** (328 mL, 70% accuracy). A balanced set has more failed trials (45% instead of 34%), and every one of our models still runs low on those (about 90 mL low on average). Their 85% accuracy is reached on 10% of balanced sets.
+- Our re-build of their design scores worse than our models under both designs, so the gap to the published numbers is not explained by test design alone.
+
+### Phase 1 scorecard
+
+| # | Bar | Result |
+|---|---|---|
+| 1.1 | Explain the R² gap with numbers | Done. RMSE is the comparable score |
+| 1.2 | RMSE under their protocol below 310 mL | **Met on random test sets (299)**, not on balanced ones (328) |
+| 1.3 | Two-part model beats the best of 1.2 | Not met |
+| 1.4 | Over-500 caught ≥ 70% and accuracy ≥ 78% | Caught met with a tuned cutoff (70–72%), accuracy not (75–76%) |
+| 1.5 | Failure AUC ≥ 0.82 | Not met (0.792). The 365-trial data did confirm the previous-attempt finding on 103 new surgeons |
+| 1.6 | Gap vs H excludes 0 | **Met for DG on all three scores** |
 
 ## Fully automatic (no human tool labels)
 

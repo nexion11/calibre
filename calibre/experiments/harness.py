@@ -61,6 +61,8 @@ def scores(table, predicted_ml, failure_risk):
         "log_r2": r2_score(np.log(blood_loss), np.log(predicted_ml)),
         "spearman": spearmanr(blood_loss, predicted_ml)[0],
         "median_ml_error": np.median(np.abs(predicted_ml - blood_loss)),
+        "r2_ml": r2_score(blood_loss, predicted_ml),  # in plain mL, the way SOCALNet's error is reported
+        "rmse_ml": np.sqrt(np.mean((predicted_ml - blood_loss) ** 2)),
     }
 
 
@@ -113,6 +115,25 @@ def paired_difference(table, new, old, metric="severe_auc", seed=1):
     return {"gap": full_new - full_old,
             "low": np.quantile(gaps, 0.025), "high": np.quantile(gaps, 0.975),
             "chance_new_is_better": (gaps > 0).mean()}
+
+
+def paired_differences(table, new, old, seed=1):
+    """paired_difference for every score at once. Same resampled surgeons, so the numbers match it."""
+    rng = np.random.default_rng(seed)
+    rows_by_surgeon = list(table.groupby("participant_id").indices.values())
+    gaps = []
+    for _ in range(bootstrap_rounds):
+        rows = np.concatenate([rows_by_surgeon[i] for i in rng.integers(len(rows_by_surgeon), size=len(rows_by_surgeon))])
+        sample = table.iloc[rows]
+        if (sample["blood_loss"] > severe_ml).nunique() < 2 or sample["success"].nunique() < 2:
+            continue
+        new_scores = pd.Series(scores(sample, new.attrs["predicted_ml"][rows], new.attrs["failure_risk"][rows]))
+        old_scores = pd.Series(scores(sample, old.attrs["predicted_ml"][rows], old.attrs["failure_risk"][rows]))
+        gaps.append(new_scores - old_scores)
+    gaps = pd.DataFrame(gaps)
+    full = pd.Series(scores(table, new.attrs["predicted_ml"], new.attrs["failure_risk"])) \
+        - pd.Series(scores(table, old.attrs["predicted_ml"], old.attrs["failure_risk"]))
+    return pd.DataFrame({"gap": full, "low": gaps.quantile(0.025), "high": gaps.quantile(0.975)})
 
 
 def show(summary):
