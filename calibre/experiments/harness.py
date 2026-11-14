@@ -126,3 +126,18 @@ if __name__ == "__main__":
     table = load_table()
     show(evaluate(table, ridge_on_log(model_features), failure_classifier(model_features),
                   "CALIBRE today (human tool labels)"))
+
+
+def evaluate_leave_one_site_out(table, predict_ml, predict_failure, name=""):
+    """Train on every SOCAL course site but one, test on the one left out. Repeated for each site."""
+    predicted_ml, failure_risk = np.zeros(len(table)), np.zeros(len(table))
+    for site in table["cohort"].unique():
+        test_rows = np.where(table["cohort"] == site)[0]
+        train_rows = np.where(table["cohort"] != site)[0]
+        predicted_ml[test_rows] = predict_ml(table.iloc[train_rows], table.iloc[test_rows])
+        failure_risk[test_rows] = predict_failure(table.iloc[train_rows], table.iloc[test_rows])
+    ranges = surgeon_bootstrap(table, predicted_ml, failure_risk)
+    summary = pd.DataFrame({"score": pd.Series(scores(table, predicted_ml, failure_risk)),
+                            "low": ranges.loc[0.025], "high": ranges.loc[0.975]})
+    summary.attrs.update(name=name, trials=len(table), predicted_ml=predicted_ml, failure_risk=failure_risk)
+    return summary

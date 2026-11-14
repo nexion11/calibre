@@ -13,3 +13,4 @@ submission/
 data/yolo_folds/
 models/fold_detectors/
 models/fold_detectors_log.txt
+data/embeddings_*.npz

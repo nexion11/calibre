@@ -1,0 +1,2 @@
+severe_auc,failure_auc,false_alarms_at_75pct_caught,log_r2,spearman,median_ml_error,winners
+0.8070583262890956,0.7917933130699089,0.2857142857142857,0.40636020707224396,0.6058904584703922,143.61100291247374,E. B + all surgeon information | E. B + all surgeon information | D. B + surgeon's previous attempt | D. B + surgeon's previous attempt | E. B + all surgeon information
