@@ -1,0 +1,9 @@
+{
+  "name": "s_640",
+  "start_weights": "yolo11s.pt",
+  "imgsz": 640,
+  "data": "plain",
+  "epochs": 30,
+  "train_hours": 2.0939311637481053,
+  "train_images": 22012
+}
