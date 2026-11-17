@@ -345,40 +345,44 @@ The raw and cleaned columns are averages over the 10 reshuffles. The gap is from
 
 **How close each feature from automatic labels is to the same feature from human labels** (correlation across the 143 trials, `results/clean_feature_agreement.csv`): the blood features are identical (r = 1.00), because blood is measured from color, not from tool labels. Suction and cottonoid time, suction clearing and two-handed time agree well (r 0.82–0.94). The weak ones are **first second a cottonoid appears** (r 0.40 raw, 0.48 cleaned), **first second a grasper appears** (0.48, 0.42) and **tool switches per second** (0.66, 0.67). A single early false detection sets a "first second" feature wrong, and every blip counts as a switch. These are where better detection, or features less sensitive to single frames, would help most.
 
-Decision: the cleaned labels become the automatic default (`clean` label set), since they are never worse in a way the ranges can show, and they are better for blood loss in the plain models. Part B (the detector search on the PC) is running; interim results are below.
+Decision: the cleaned labels become the automatic default (`clean` label set), since they are never worse in a way the ranges can show, and they are better for blood loss in the plain models. Part B (the detector search on the PC) is below.
 
-### Phase 2, Part B so far: bigger detectors (interim, fold 0)
+### Phase 2, Part B: the detector search on fold 0 (final)
 
-The detector search (`calibre/experiments/detector_search.py`) is running on the PC. Every model is trained on the same fold-0 training surgeons (22,012 frames, every second), picked by its score on held-out validation surgeons (3,369 frames), and scored once on the 15 fold-0 test surgeons (6,062 frames) that the current detector never saw either. All runs use 30 rounds at 640 px. The current app detector is the smallest model (n), trained for 20 rounds on every 4th frame.
+The detector search (`calibre/experiments/detector_search.py`) ran on the PC (RTX 4060). Every model is trained on the same fold-0 training surgeons (22,012 frames, every second), picked by its score on held-out validation surgeons (3,369 frames), and scored once on the 15 fold-0 test surgeons (6,062 frames) that the current detector never saw either. YOLO runs use 30 rounds. RetinaNet is SOCAL's detector design (ResNet-50 + FPN), trained by us for the standard 12 epochs on every second training frame, with its best round picked on validation.
 
-Interim scoring (`uv run python -m calibre.experiments.detector_interim`, numbers in `results/detector_search/interim_runs.csv` and `interim_gaps.csv`) uses our own mAP50 for every model, with a 95% range from resampling the 15 test surgeons. Gaps are paired: both models are scored on the same resampled surgeons each round.
+Scoring (`uv run python -m calibre.experiments.detector_interim`, numbers in `results/detector_search/interim_runs.csv` and `interim_gaps.csv`) uses our own mAP50 for every model, with a 95% range from resampling the 15 test surgeons. Gaps are paired: both models are scored on the same resampled surgeons each round.
 
-| Model | Size | mAP50 [95% range] | Suction | Grasper | Cottonoid | Muscle | String |
-|---|---|---|---|---|---|---|---|
-| Current app detector (n, 20 rounds, every 4th frame) | 2.6 M parameters | 0.792 [0.757, 0.827] | 0.946 | 0.907 | 0.686 | 0.613 | 0.808 |
-| n, 30 rounds, every frame | 2.6 M | 0.825 [0.796, 0.856] | 0.960 | 0.932 | 0.751 | 0.642 | 0.840 |
-| s, 30 rounds, every frame | 9.4 M | 0.841 [0.808, 0.875] | 0.963 | 0.940 | 0.779 | 0.671 | 0.852 |
-| m, 30 rounds, every frame | 20.1 M | **0.862** [0.830, 0.892] | 0.964 | 0.945 | 0.817 | 0.708 | 0.875 |
-| SOCAL RetinaNet (published, different split) | | 0.67 | 0.91 | 0.77 | 0.52 | 0.25 | 0.50 |
+| Model | mAP50 [95% range] | Suction | Grasper | Cottonoid | Muscle | String |
+|---|---|---|---|---|---|---|
+| SOCAL RetinaNet (published, different split) | 0.67 | 0.91 | 0.77 | 0.52 | 0.25 | 0.50 |
+| **RetinaNet, trained by us on this split** | **0.766** [0.729, 0.805] | 0.942 | 0.882 | 0.706 | 0.560 | 0.742 |
+| Current app detector (YOLO11n, 20 rounds, every 4th frame) | 0.792 [0.757, 0.827] | 0.946 | 0.907 | 0.686 | 0.613 | 0.808 |
+| YOLO11n, 30 rounds, every frame | 0.825 [0.796, 0.856] | 0.960 | 0.932 | 0.751 | 0.642 | 0.840 |
+| YOLO11s, 640 px | 0.841 [0.808, 0.875] | 0.963 | 0.940 | 0.779 | 0.671 | 0.852 |
+| YOLO11s, 960 px | 0.854 [0.819, 0.888] | 0.964 | 0.944 | 0.803 | 0.705 | 0.851 |
+| **YOLO11s, 960 px + rare-tool fix (final setup)** | **0.857** [0.824, 0.889] | 0.965 | 0.947 | 0.819 | 0.694 | 0.860 |
+| YOLO11m, 640 px | 0.862 [0.830, 0.892] | 0.964 | 0.945 | 0.817 | 0.708 | 0.875 |
 
 Paired gaps in mAP50 [95% range]:
 
 | Comparison | mAP50 gap | Cottonoid | Muscle |
 |---|---|---|---|
-| n (more training) minus current | +0.033 [+0.019, +0.046] | +0.065 [+0.036, +0.095] | +0.029 [−0.006, +0.066] |
-| s minus current | +0.049 [+0.034, +0.062] | +0.093 [+0.063, +0.120] | +0.059 [+0.017, +0.099] |
-| m minus current | +0.069 [+0.056, +0.085] | +0.130 [+0.099, +0.166] | +0.095 [+0.062, +0.125] |
-| s minus n | +0.016 [+0.009, +0.021] | +0.028 [+0.010, +0.043] | +0.030 [−0.004, +0.061] |
-| m minus s | +0.021 [+0.011, +0.030] | +0.038 [+0.018, +0.060] | +0.036 [+0.001, +0.070] |
+| **Final setup minus our RetinaNet** | **+0.090 [+0.074, +0.106]** | +0.113 [+0.083, +0.137] | +0.134 [+0.079, +0.192] |
+| Our RetinaNet minus current app detector | −0.026 [−0.039, −0.011] | +0.019 [−0.001, +0.043] | −0.053 [−0.114, +0.004] |
+| Final setup minus current app detector | +0.065 [+0.053, +0.077] | +0.132 [+0.097, +0.165] | +0.081 [+0.059, +0.101] |
+| n (training recipe only) minus current | +0.033 [+0.019, +0.046] | +0.065 [+0.036, +0.095] | +0.029 [−0.006, +0.066] |
+| s 960 px minus s 640 px (resolution) | +0.013 [+0.001, +0.025] | +0.024 [+0.007, +0.046] | +0.034 [−0.013, +0.088] |
+| Rare-tool fix minus s 960 px | +0.003 [−0.007, +0.013] | +0.016 [0.000, +0.028] | −0.011 [−0.046, +0.016] |
+| m 640 px minus final setup | +0.005 [−0.003, +0.014] | −0.002 [−0.019, +0.018] | +0.014 [−0.011, +0.042] |
 
-- **Every new model beats the current detector, and every range excludes 0.** The largest, m, is 0.862, up 0.069. That is 0.19 above the published RetinaNet's 0.67, though the published number is on a split we cannot reproduce (Part B's own RetinaNet run will give a same-split comparison).
-- **About half the gain is just training longer on every frame** (n vs current, +0.033). Model size adds the rest, in steady steps (s +0.016 over n, m +0.021 over s).
-- **The gains are biggest where it matters most: the rare tools.** Cottonoid goes from 0.686 to 0.817 and muscle from 0.613 to 0.708 with m. These are the tools behind the fragile handling features found in Part A.
-- Validation and test scores agree for every model (within 0.006 in Ultralytics' own numbers), so the selection is not overfitting to the validation surgeons.
-- Plan bar for 2.2 (best setup at least 0.80 on fold 0) is met by all three sizes.
-- The current detector's test predictions were made on the Mac (Apple GPU); the others on the PC (NVIDIA). Our scorer gave the current detector 0.792 here and Ultralytics gave it 0.797 on the PC, so the device difference is small next to the gaps.
-- Still running: s at 960 px (s won the phone-speed pick on validation, 0.847 vs n's 0.831), then the rare-tool fixes on the best phone setup, then our own RetinaNet.
-- Open question for Part C: the phone needs a fast model (n or s), but the automatic labels for the outcome experiments are made offline, where m's extra cost does not matter. Using m for labels and s on the phone would need the phone-vs-offline agreement check in Phase 6.
+- **On the same surgeons, SOCAL's detector design scores 0.766, not 0.67.** Most of the gap between our Phase 1 detector (0.775) and the published 0.67 therefore comes from the split and training, not from YOLO. The published number should not be used as the baseline for detector claims. Our own RetinaNet is the fair one.
+- **Against that fair baseline, the final setup is better by 0.090, and every tool's range excludes 0.** The gains are largest on the hard tools: muscle +0.134, string +0.117, cottonoid +0.113.
+- **The gain splits into training recipe (+0.033), model size (+0.016 for s over n) and resolution (+0.013).** The rare-tool fix (oversampling and copy-paste) adds nothing measurable (+0.003, range crosses 0; muscle slightly lower). It stays in the final setup only because the setup was picked on validation, as fixed before the run (0.866 vs 0.860).
+- **The small phone model at 960 px matches the largest model** (m minus final setup +0.005, range crosses 0). So one model can serve both the phone and the offline labels, which removes the open Part C question and the phone-vs-offline check it needed.
+- Plan bars: 2.2 (best setup ≥ 0.80) met. 2.3 (muscle ≥ 0.55, cottonoid ≥ 0.72) met by the final setup (0.694, 0.819), but by resolution and size, not by the rare-tool fix. 2.4 (same-split gap with a range) met.
+- Our RetinaNet's validation score was still rising at its last epoch (0.707, 0.759, 0.775 at epochs 8, 10, 12). It used the standard 12-epoch schedule; a longer schedule might add a little. With a gap of 0.09, that would not change the result.
+- Our scorer and Ultralytics agree within 0.003 on every model. The PC and Mac scores of RetinaNet and the final setup are identical (0.766, 0.857).
 
 ## Limitations
 

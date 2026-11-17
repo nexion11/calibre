@@ -1,4 +1,6 @@
 {
   "phone_model": "s_640",
-  "largest_model_wins": true
+  "largest_model_wins": true,
+  "phone_setup": "s_960",
+  "final_setup": "s_960_rare"
 }

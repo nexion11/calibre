@@ -34,7 +34,10 @@ if __name__ == "__main__":
     print(table.round(3).to_string(index=False))
 
     pairs = [(n, "baseline") for n in names if n != "baseline"]
-    pairs += [(a, b) for a, b in [("s_640", "n_640"), ("m_640", "s_640"), ("m_640", "n_640")] if a in scorers and b in scorers]
+    pairs += [(a, b) for a, b in [("s_640", "n_640"), ("m_640", "s_640"), ("m_640", "n_640"),
+                                  ("s_960", "s_640"), ("s_960_rare", "s_960"), ("m_640", "s_960_rare"),
+                                  ("s_960_rare", "retinanet"), ("m_640", "retinanet")]
+              if a in scorers and b in scorers]
     gaps = []
     for new, old in pairs:
         gap = paired_gap(scorers[new], scorers[old])
