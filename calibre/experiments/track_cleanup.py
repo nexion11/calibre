@@ -7,6 +7,7 @@
 #     human labels of the surgeons being scored are never looked at.
 #  4. Write data/auto_boxes_clean.csv, which the outcome experiments read with the label set "clean".
 #   uv run python -m calibre.experiments.track_cleanup [predict] [tune]
+#   uv run python -m calibre.experiments.track_cleanup tune --v2    (Part C detectors -> data/auto_boxes_v2_clean.csv)
 import os
 import sys
 import numpy as np
@@ -20,7 +21,10 @@ cutoffs = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.6
 gap_fills = [0, 1, 2]     # fill a hole of up to this many seconds when the tool is seen on both sides
 min_runs = [1, 2]         # drop a run of detections shorter than this many seconds
 app_settings = {"cutoff": 0.35, "gap_fill": 0, "min_run": 1}
-clean_boxes_file = "data/auto_boxes_clean.csv"
+v2 = "--v2" in sys.argv  # Part C: tune on the final detectors' boxes (final_detectors.py label) instead of Phase 1's
+low_folder = "data/auto_boxes_v2_low" if v2 else "data/auto_boxes_low"
+clean_boxes_file = "data/auto_boxes_v2_clean.csv" if v2 else "data/auto_boxes_clean.csv"
+result_tag = "_v2" if v2 else ""
 
 
 def predict_low_confidence(fold, frame_to_trial, folds):
@@ -128,12 +132,13 @@ def apply_settings(auto, frames, settings_by_tool):
 
 
 def load_low_confidence(frame_to_trial):
-    auto = pd.concat([pd.read_csv(f"data/auto_boxes_low/fold{fold}.csv") for fold in range(n_folds)])
+    auto = pd.concat([pd.read_csv(f"{low_folder}/fold{fold}.csv") for fold in range(n_folds)])
     return auto.merge(frame_to_trial, on="frame", how="left")
 
 
 if __name__ == "__main__":
-    parts = sys.argv[1:] or ["predict", "tune"]
+    parts = [a for a in sys.argv[1:] if not a.startswith("--")] or (["tune"] if v2 else ["predict", "tune"])
+    assert not (v2 and "predict" in parts), "with --v2 the boxes come from final_detectors.py label"
     folds = load_surgeon_folds()
     frame_to_trial = pd.read_csv("data/frame_to_trial_mapping.csv")
 
@@ -182,9 +187,9 @@ if __name__ == "__main__":
                             "f1_app_setting": f1(truth_by_fold, app_guess), "f1_cleaned": f1(truth_by_fold, clean_guess)})
 
         os.makedirs("results", exist_ok=True)
-        pd.DataFrame(chosen).to_csv("results/clean_track_settings.csv", index=False)
+        pd.DataFrame(chosen).to_csv(f"results/clean_track_settings{result_tag}.csv", index=False)
         f1_table = pd.DataFrame(f1_rows)
-        f1_table.to_csv("results/clean_track_presence_f1.csv", index=False)
+        f1_table.to_csv(f"results/clean_track_presence_f1{result_tag}.csv", index=False)
         print(f1_table.round(3).to_string(index=False))
         cleaned = pd.concat(cleaned_parts, ignore_index=True).sort_values("frame", kind="stable")
         cleaned[["frame", "label", "x1", "y1", "x2", "y2", "confidence"]].to_csv(clean_boxes_file, index=False)

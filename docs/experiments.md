@@ -384,6 +384,20 @@ Paired gaps in mAP50 [95% range]:
 - Our RetinaNet's validation score was still rising at its last epoch (0.707, 0.759, 0.775 at epochs 8, 10, 12). It used the standard 12-epoch schedule; a longer schedule might add a little. With a gap of 0.09, that would not change the result.
 - Our scorer and Ultralytics agree within 0.003 on every model. The PC and Mac scores of RetinaNet and the final setup are identical (0.766, 0.857).
 
+### Phase 3.1: tool motion features (human labels)
+
+Nine features describe how the tools move in the first minute, not only whether they are on screen (`calibre/experiments/motion_features.py`): suction path length, how uneven its movement is, share of seconds it holds still, grasper speed and stillness, distance from the suction to the middle of the blood, share of suction seconds over the blood, share of seconds suction and grasper work close together, and how far the middle of the blood moves per second. The blood's location uses the same colour rule as the blood amount. Run with `uv run python -m calibre.experiments.phase3`; numbers in `results/human_phase3_motion.csv`.
+
+| Model | Severe AUC, without → with | Failure AUC, without → with | RMSE mL, without → with |
+|---|---|---|---|
+| B. video only | 0.781 → 0.767 (−0.010 [−0.039, +0.017]) | 0.652 → 0.596 (−0.042 [−0.091, +0.010]) | 360 → 370 (+10 [−3, +22]) |
+| D. B + previous attempt | 0.813 → 0.803 (−0.007 [−0.032, +0.019]) | 0.792 → 0.759 (−0.017 [−0.041, +0.010]) | 338 → 349 (+9 [−3, +22]) |
+| DG. DINOv2 + D | 0.818 → 0.805 (−0.014 [−0.030, −0.001]) | 0.738 → 0.733 (−0.010 [−0.036, +0.017]) | 312 → 323 (+11 [+2, +19]) |
+
+- **Motion features do not help. They make every model a little worse**, and for the best model (DG) the loss is clear on severe AUC and blood-loss error. This is a negative result, kept as is. No subset of the nine was tried afterwards, to avoid picking features on the test results.
+- The likely reason is 143 trials: nine more inputs add noise faster than signal. The fine-tuned model in Phase 4 learns from every second instead of from 143 trial totals, which is the planned way around this.
+- With human labels, these are the best-case motion features. They were not rerun on automatic labels.
+
 ## Limitations
 
 - These are cadaver simulation trials only, with 143 trials from 73 surgeons, so the 95% ranges are wide.

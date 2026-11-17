@@ -63,7 +63,7 @@ The detector feeds everything else, and it is the one place we already beat a pu
 | 2.2 | Size and resolution test on fold 0: YOLO11 n / s / m, image size 640 vs. 960, all frames, 30 rounds (cut from 60 to fit the GPU; still about 6x the training of the current detector). 960 px and 2.3 run on the best phone-speed model (n or s) | Ours was the smallest model, on every 4th frame, and still improving at round 20 | Best setup ≥ 0.80 on fold 0. **Done:** final setup (s, 960 px) 0.857 vs current 0.792; m 0.862, no better than s at 960 px |
 | 2.3 | Rare-tool fixes: oversample frames with muscle and cottonoid, copy-paste augmentation | Muscle is 0.42 and cottonoid 0.66 | Muscle ≥ 0.55, cottonoid ≥ 0.72. **Met** (0.694, 0.819), but the fix itself adds +0.003 (range crosses 0) |
 | 2.4 | RetinaNet trained by us on the same fold-0 split | Their 0.67 was on a split they did not describe. This makes the comparison same-data, same-surgeons | Paired gap with a range. **Done:** our RetinaNet 0.766; final setup +0.090 [+0.074, +0.106] |
-| 2.5 | Best setup trained on all 5 folds, new auto labels written | Needed for the fully automatic pipeline | mAP50 ≥ 0.80, lower end of range above 0.67 |
+| 2.5 | Best setup trained on all 5 folds, new auto labels written | Needed for the fully automatic pipeline | mAP50 ≥ 0.80, lower end of range above 0.67. **Code ready** (`final_detectors.py`, label sets `auto2`/`clean2`); waiting for GPU time, see `docs/running_on_gpus.md` |
 | 2.6 | Smoothing over time: fill 1–2 second gaps in a tool's track | Outcome features need per-second presence, not per-frame boxes | Per-second presence F1 up. **Done:** cottonoid 0.79 → 0.84, muscle 0.63 → 0.69; blood-loss RMSE −10 mL for D (range excludes 0); handling features still add nothing |
 | 2.7 | iPhone export check: accuracy after Core ML conversion at 16-bit and 8-bit | Proves the deployed model matches the reported one | Drop under 0.01 mAP50 |
 
@@ -71,7 +71,7 @@ The detector feeds everything else, and it is the one place we already beat a pu
 
 | # | Experiment | Why |
 |---|---|---|
-| 3.1 | Tool motion features from tracked boxes: distance moved, speed, idle time, suction-to-blood distance, how long two tools overlap | Skill shows in how tools move, not only whether they are present |
+| 3.1 | Tool motion features from tracked boxes: distance moved, speed, idle time, suction-to-blood distance, how long two tools overlap | Skill shows in how tools move, not only whether they are present. **Done, negative:** slightly worse on every model (DG severe AUC −0.014 [−0.030, −0.001]); does not move forward |
 | 3.2 | Surgery-pretrained image model in place of DINOv2 (candidates: EndoViT, SurgeNet, EndoFM; I will confirm safe downloadable weights first) | Already knows tissue, blood and instruments |
 | 3.3 | Video model embeddings (VideoMAE or V-JEPA 2) on short clips | Captures motion that single frames miss |
 | 3.4 | Running prediction: one model that updates every second from everything seen so far | Replaces the fixed 60 s window; this is what the app needs, and it gives a lead-time result |
@@ -87,6 +87,7 @@ This is the experiment most likely to move the blood-loss number.
 - **Leak rule.** "Seconds left until control" comes from the outcome, so 5 encoders are trained, one per surgeon fold, and each surgeon is only ever scored with the encoder that never saw them. Training rows and test rows in a fold both use that fold's encoder.
 - **Comparisons:** frozen vs. fine-tuned, with vs. without each per-frame task, ResNet-50 vs. the phase 3 winner, sequence model vs. simple averaging. Three random seeds each.
 - **Success bar:** RMSE under their protocol below 295 mL, and severe AUC ≥ 0.85 with surgeons held out.
+- **Code ready** (`per_second_finetune.py`): 25 encoders per variant and seed (5 outer + 20 inner, so no surgeon is ever described by an encoder that saw their outcome), evaluated on the 5 fixed surgeon folds against D and DG on the same folds. Variants: all tasks, frozen backbone, and each task removed. Waiting for GPU time.
 
 ### Phase 5. Combining models (Mac, about 2 hours)
 

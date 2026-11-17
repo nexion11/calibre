@@ -38,6 +38,13 @@ rare_tools = {"muscle": 3, "cottonoid": 2}  # frames with these tools appear thi
 pasted_images = 60 if quick else 3000
 
 
+def configure(new_fold, new_data_root, new_models_root, new_results_root):
+    """Point the helpers below at another surgeon fold and other folders (used by final_detectors.py)."""
+    global fold, data_root, models_root, results_root, choice_file
+    fold, data_root, models_root, results_root = new_fold, new_data_root, new_models_root, new_results_root
+    choice_file = f"{results_root}/choices.json"
+
+
 def link_or_copy(source, destination):
     for make in (os.symlink, os.link):  # hard links work on Windows without admin rights
         try:

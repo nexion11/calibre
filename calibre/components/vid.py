@@ -9,7 +9,10 @@ default_vid_width = 1920
 human_boxes_file = "data/socal.csv"
 auto_boxes_file = "data/auto_boxes.csv"  # from calibre/experiments/fold_detectors.py, no human labels
 clean_boxes_file = "data/auto_boxes_clean.csv"  # the same, with tracks cleaned up (calibre/experiments/track_cleanup.py)
-boxes_files = {"human": human_boxes_file, "auto": auto_boxes_file, "clean": clean_boxes_file}
+auto2_boxes_file = "data/auto_boxes_v2.csv"  # Part C: final detectors (final_detectors.py), app cutoff
+clean2_boxes_file = "data/auto_boxes_v2_clean.csv"  # the same, tracks cleaned (track_cleanup.py tune --v2)
+boxes_files = {"human": human_boxes_file, "auto": auto_boxes_file, "clean": clean_boxes_file,
+               "auto2": auto2_boxes_file, "clean2": clean2_boxes_file}
 
 
 def load_tool_boxes(boxes_file=human_boxes_file):

@@ -17,3 +17,12 @@ data/embeddings_*.npz
 data/yolo_search*/
 models/detector_search*/
 results/detector_search_quick/
+data/frames_small*/
+data/finetune*/
+data/yolo_final*/
+models/final_detectors*/
+data/auto_boxes_v2_quick*
+data/auto_boxes_v2_low_quick/
+results/final_detectors_quick/
+results/finetune_quick/
+logs/
