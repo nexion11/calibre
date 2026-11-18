@@ -302,23 +302,27 @@ def finetuned_feature_names():
     return [f"ft_{n}_{s}" for n in head_names for s in ["mean", "late", "trend"]] + ["ft_time_left_at_end"]
 
 
-def features_for_fold(p, variant, seed, outer, folds, trial_ids):
+def features_for_fold(p, variant, seed, outer, folds, trial_ids, ranked=False):
     """Rows for outer fold k: test surgeons described by encoder k; training surgeons in fold j by encoder (k, j)
-    when the variant uses the outcome-derived task, else by encoder k (its targets never touch the outcome)."""
+    when the variant uses the outcome-derived task, else by encoder k (its targets never touch the outcome).
+    ranked: each encoder's numbers become percentiles among all 147 trials it described (inputs only, no outcomes),
+    so encoders that run on different scales line up. Added after the first evaluation showed the inner and outer
+    encoders' time-left outputs differ in average by up to 0.5 (their spread is about 0.7)."""
     tasks, _ = variants[variant]
     fold_of = folds.set_index("participant_id")["fold"]
     cache = {}
 
     def described(inner):
         if inner not in cache:
-            cache[inner] = trial_summaries(encoder_file(p, variant, seed, outer, inner))
+            summary = pd.DataFrame.from_dict(trial_summaries(encoder_file(p, variant, seed, outer, inner)), orient="index")
+            cache[inner] = summary.rank(pct=True) if ranked else summary
         return cache[inner]
     rows = {}
     for trial_id in trial_ids:
         surgeon_fold = fold_of[int(trial_id[1:4])]
         inner = None if (surgeon_fold == outer or "time" not in tasks) else surgeon_fold
-        rows[trial_id] = described(inner)[trial_id]
-    return pd.DataFrame.from_dict(rows, orient="index")
+        rows[trial_id] = described(inner).loc[trial_id]
+    return pd.DataFrame(rows).T
 
 
 def evaluate_fixed_folds(table, folds, fit_predict_ml, fit_predict_failure, name, features_by_fold=None):
@@ -376,13 +380,14 @@ def evaluate(quick):
     for variant in variants:
         seeds = sorted({int(f.split("seed")[1]) for f in os.listdir(p["encoders"])
                         if f.startswith(f"{variant}_seed")}) if os.path.exists(p["encoders"]) else []
-        for extra, label in [([], "fine-tuned outputs only"), (d, "fine-tuned outputs + D")]:
+        for extra, label, ranked in [([], "fine-tuned outputs only", False), (d, "fine-tuned outputs + D", False),
+                                     ([], "ranked outputs only", True), (d, "ranked outputs + D", True)]:
             runs = []
             for seed in seeds:
                 if not all(os.path.exists(encoder_file(p, variant, seed, k, j)) for k, j in encoder_jobs(variant)):
                     print(f"{variant} seed {seed}: encoders missing, skipped")
                     continue
-                by_fold = {k: features_for_fold(p, variant, seed, k, folds, table["trial_id"]) for k in range(n_folds)}
+                by_fold = {k: features_for_fold(p, variant, seed, k, folds, table["trial_id"], ranked) for k in range(n_folds)}
                 runs.append(evaluate_fixed_folds(table, folds, *ridge_and_logistic(list(extra) + ft),
                                                  f"{variant} {label} seed {seed}", by_fold))
             if runs:

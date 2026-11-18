@@ -398,6 +398,23 @@ Nine features describe how the tools move in the first minute, not only whether 
 - The likely reason is 143 trials: nine more inputs add noise faster than signal. The fine-tuned model in Phase 4 learns from every second instead of from 143 trial totals, which is the planned way around this.
 - With human labels, these are the best-case motion features. They were not rerun on automatic labels.
 
+### Phase 4, first run: per-second fine-tuning (one seed, automatic labels)
+
+A ResNet-50 (SOCALNet's backbone, ImageNet start) was fine-tuned on every second of the training videos to predict the tools on screen, the visible blood, the seconds left until control, and whether the muscle patch is in (`calibre/experiments/per_second_finetune.py`). 25 encoders were trained on the home PC (about 7 minutes each), so that no trial is ever described by an encoder that saw its surgeon. The per-second outputs over the first minute are summarised per trial (mean, last 15 s and trend of each output, 25 numbers) and fed to the same ridge and logistic models. Scoring uses the 5 fixed surgeon folds, with D and DG rerun on the same folds. Labels are the cleaned automatic ones. Numbers in `results/finetune/clean_comparison.csv`.
+
+| Model (same 5 surgeon folds) | Severe AUC | Failure AUC | RMSE mL | Gap vs D: severe / failure / RMSE [95%] |
+|---|---|---|---|---|
+| D. B + previous attempt | 0.804 | 0.759 | 337 | |
+| DG. DINOv2 + D | 0.811 | 0.710 | 311 | +0.007 [−0.03, +0.05] / −0.048 [−0.10, +0.01] / −26 [−46, 0] |
+| Fine-tuned outputs only | 0.775 | 0.503 | 347 | −0.029 [−0.10, +0.04] / −0.255 [−0.35, −0.15] / +10 [−24, +56] |
+| **Fine-tuned outputs + D** | **0.811** | **0.778** | **321** | +0.007 [−0.04, +0.05] / +0.019 [−0.03, +0.07] / −15 [−49, +28] |
+
+- **The first run does not beat D.** Adding the fine-tuned outputs to D moves every score slightly the right way, but no range excludes 0. The plan's bar (severe AUC ≥ 0.85, RMSE below 295 mL) is not met.
+- **Stage 1 did learn something useful about unseen surgeons.** On the 143 trials, each scored by an encoder that never saw that surgeon, the average predicted time-left over the first minute correlates with blood loss (Spearman 0.50) and alone separates failed from controlled trials at AUC 0.70.
+- **Stage 2 is what fails.** With 25 closely related inputs and about 35 failures per training set, the failure model shrinks itself to an almost constant guess in 4 of 5 folds (spread of predictions about 0.002). Within each fold it still ranks trials well (AUC 0.67–0.93), but pooled across folds the near-constant guesses only reflect each fold's average, which gives 0.50. This is the same artifact noted for the 188-trial test in Phase 1.
+- The muscle task never learned. Its validation loss started at coin-flip level and rose every round, in every encoder.
+- Putting each encoder's outputs on a common percentile scale (they differ in average by up to 0.5 on a spread of about 0.7) did not help either: 0.793 / 0.551 alone, 0.820 / 0.700 with D. That check was added after seeing the first result and is reported as such.
+
 ## Limitations
 
 - These are cadaver simulation trials only, with 143 trials from 73 surgeons, so the 95% ranges are wide.
