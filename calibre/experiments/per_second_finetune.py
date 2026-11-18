@@ -268,7 +268,7 @@ def train_encoder(table, folds, variant, seed, outer, inner, quick):
             heads.append(outputs.cpu().numpy())
             embeddings.append(features.float().cpu().numpy().astype(np.float16))
     os.makedirs(os.path.dirname(out_file), exist_ok=True)
-    np.savez_compressed(out_file, trial_id=first_minute["trial_id"].values.astype("U12"), second=first_minute["frame_number"].values,
+    np.savez_compressed(out_file, trial_id=first_minute["trial_id"].to_numpy().astype(str), second=first_minute["frame_number"].values,
                         heads=np.concatenate(heads), embedding=np.concatenate(embeddings))
     json.dump({"variant": variant, "seed": seed, "outer": outer, "inner": inner, "tasks": list(tasks),
                "train_backbone": train_backbone, "train_frames": len(fit_rows), "val_frames": len(val_rows),
