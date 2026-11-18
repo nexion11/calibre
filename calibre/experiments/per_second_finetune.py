@@ -216,7 +216,7 @@ def train_encoder(table, folds, variant, seed, outer, inner, quick):
     schedule = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=[g["lr"] for g in groups],
                                                    total_steps=epochs * len(loader), pct_start=0.15)
     scaler = torch.amp.GradScaler("cuda", enabled=mixed)
-    best_loss, best_state, history, started = np.inf, None, [], time.time()
+    best_loss, best_state, best_epoch, first_val, history, started = np.inf, None, 0, None, [], time.time()
     for epoch in range(1, epochs + 1):
         net.train()
         if not train_backbone:
@@ -241,12 +241,18 @@ def train_encoder(table, folds, variant, seed, outer, inner, quick):
                     totals[task] = totals.get(task, 0.0) + value.item() * len(targets)
                 count += len(targets)
         val = {task: total / count for task, total in totals.items()}
-        history.append({"epoch": epoch, **val})
+        # pick the round by each task's loss relative to its first round, so no single task's scale decides
+        first_val = first_val if epoch > 1 else dict(val)
+        relative = float(np.mean([val[task] / max(first_val[task], 1e-9) for task in val]))
+        history.append({"epoch": epoch, **val, "relative": relative, "minutes": (time.time() - started) / 60})
         print(f"{variant} seed {seed} outer {outer} inner {inner} epoch {epoch}:",
-              {k: round(v, 4) for k, v in val.items()}, flush=True)
-        if sum(val.values()) < best_loss:
-            best_loss, best_state = sum(val.values()), {k: v.detach().clone() for k, v in net.state_dict().items()}
+              {k: round(v, 4) for k, v in val.items()}, f"relative {relative:.3f}",
+              f"{(time.time() - started) / 60:.1f} min", flush=True)
+        if relative < best_loss:
+            best_loss, best_epoch = relative, epoch
+            best_state = {k: v.detach().clone() for k, v in net.state_dict().items()}
     net.load_state_dict(best_state)
+    print(f"kept round {best_epoch}", flush=True)
 
     # describe the first minute of every trial; the evaluator picks which encoder describes which surgeon
     first_minute = table[table["frame_number"] <= watch_seconds]
@@ -266,7 +272,7 @@ def train_encoder(table, folds, variant, seed, outer, inner, quick):
                         heads=np.concatenate(heads), embedding=np.concatenate(embeddings))
     json.dump({"variant": variant, "seed": seed, "outer": outer, "inner": inner, "tasks": list(tasks),
                "train_backbone": train_backbone, "train_frames": len(fit_rows), "val_frames": len(val_rows),
-               "epochs": epochs, "minutes": (time.time() - started) / 60, "history": history},
+               "epochs": epochs, "best_epoch": best_epoch, "minutes": (time.time() - started) / 60, "history": history},
               open(out_file.replace(".npz", ".json"), "w"), indent=2)
     print("saved", out_file, flush=True)
 
