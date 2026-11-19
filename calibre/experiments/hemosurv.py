@@ -83,25 +83,58 @@ def build_cache(quick):
     print("cache written:", p["cache"], (len(table), height, width, 3))
 
 
+channels_last = os.environ.get("CALIBRE_CHANNELS_LAST", "0") == "1"
+
+
+class RowImages(torch.utils.data.Dataset):
+    """Reads small JPEG frames in worker processes (the loader Phase 4 ran at ~1.2 min per round on the PC)."""
+
+    def __init__(self, names, folder, rows):
+        self.names, self.folder, self.rows = names, folder, rows
+
+    def __len__(self):
+        return len(self.rows)
+
+    def __getitem__(self, i):
+        r = int(self.rows[i])
+        return r, torch.from_numpy(np.asarray(Image.open(f"{self.folder}/{self.names[r]}").convert("RGB")).copy())
+
+
 class GpuBatches:
-    """Batches straight from the in-memory frame array; augmentation and normalisation happen on the GPU."""
+    """Batches of frames as uint8, moved to the GPU; augmentation and normalisation happen there.
+    source "jpeg" (default) decodes small JPEGs in worker processes; "memory" indexes one in-memory array."""
     mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
     std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
 
-    def __init__(self, frames, device):
-        self.frames, self.device = frames, device
+    def __init__(self, device, names=None, folder=None, frames=None):
+        self.device, self.names, self.folder, self.frames = device, names, folder, frames
         self.mean, self.std = self.mean.to(device), self.std.to(device)
+        self.workers = int(os.environ.get("CALIBRE_WORKERS", "4"))
 
-    def images(self, rows, train):
-        x = torch.from_numpy(self.frames[rows])
+    def batches(self, rows, batch_size, train, shuffle=False, drop_last=False):
+        rows = np.random.permutation(rows) if shuffle else np.asarray(rows)
+        if self.frames is not None:
+            stop = len(rows) - len(rows) % batch_size if drop_last else len(rows)
+            for start in range(0, stop, batch_size):
+                chunk = rows[start:start + batch_size]
+                yield chunk, self.images(torch.from_numpy(self.frames[chunk]), train)
+            return
+        loader = torch.utils.data.DataLoader(RowImages(self.names, self.folder, rows), batch_size=batch_size,
+                                             num_workers=self.workers, drop_last=drop_last, pin_memory=self.device == "cuda")
+        for chunk, x in loader:
+            yield chunk.numpy(), self.images(x, train)
+
+    def images(self, x, train):
+        rows_in_batch = x.shape[0]
         x = x.to(self.device, non_blocking=True).permute(0, 3, 1, 2).float().div_(255)
         if train:
-            flip = torch.rand(len(rows), device=self.device) < 0.5
-            x[flip] = x[flip].flip(-1)
-            gain = torch.empty(len(rows), 1, 1, 1, device=self.device).uniform_(0.85, 1.15)
-            shift = torch.empty(len(rows), 1, 1, 1, device=self.device).uniform_(-0.05, 0.05)
+            flip = (torch.rand(rows_in_batch, 1, 1, 1, device=self.device) < 0.5).float()
+            x = flip * x.flip(-1) + (1 - flip) * x  # no boolean indexing: avoids a GPU-to-CPU sync per batch
+            gain = torch.empty(rows_in_batch, 1, 1, 1, device=self.device).uniform_(0.85, 1.15)
+            shift = torch.empty(rows_in_batch, 1, 1, 1, device=self.device).uniform_(-0.05, 0.05)
             x = (x * gain + shift).clamp_(0, 1)
-        return ((x - self.mean) / self.std).contiguous(memory_format=torch.channels_last)
+        x = (x - self.mean) / self.std
+        return x.contiguous(memory_format=torch.channels_last) if channels_last else x
 
 
 # --------------------------------------------------------------------------------------------------- stage 1
@@ -144,6 +177,7 @@ def encoder_file(p, seed, outer, inner):
 
 
 def train_encoder(table, frames, folds, seed, outer, inner, quick):
+    """frames: the in-memory array (CALIBRE_LOADER=memory) or None to read small JPEGs with worker processes."""
     p = hemo_paths(quick)
     out_file = encoder_file(p, seed, outer, inner)
     if os.path.exists(out_file):
@@ -165,7 +199,7 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     device, batch_size, mixed = device_and_settings()
     batch_size = int(os.environ.get("CALIBRE_BATCH", batch_size + 32 if device == "cuda" else batch_size))
     torch.backends.cudnn.benchmark = True
-    gpu = GpuBatches(frames, device)
+    gpu = GpuBatches(device, names=table["frame"].tolist(), folder=p["small"], frames=frames)
     event_bin, first_allowed = survival_targets(table)
     targets_all = (torch.tensor(table[[f"{t}_present" for t in tool_types]].values, dtype=torch.float32),
                    torch.tensor(table["blood"].values, dtype=torch.float32),
@@ -174,7 +208,9 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     def targets_for(rows):
         return tuple(t[rows].to(device, non_blocking=True) for t in targets_all)
 
-    net = HemoEncoder().to(device).to(memory_format=torch.channels_last)
+    net = HemoEncoder().to(device)
+    if channels_last:
+        net = net.to(memory_format=torch.channels_last)
     heads = [*net.summary.parameters(), *net.tools.parameters(), *net.blood.parameters(), *net.time_left.parameters()]
     groups = [{"params": heads, "lr": 1e-3}, {"params": net.backbone.parameters(), "lr": 1e-4}]
     optimizer = torch.optim.AdamW(groups, weight_decay=1e-4)
@@ -185,11 +221,9 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     best, best_state, best_epoch, first_val, history, started = np.inf, None, 0, None, [], time.time()
     for epoch in range(1, epochs + 1):
         net.train()
-        order = np.random.permutation(fit_rows)
-        for step in range(steps):
-            rows = order[step * batch_size:(step + 1) * batch_size]
+        for rows, images in gpu.batches(fit_rows, batch_size, train=True, shuffle=True, drop_last=True):
             with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=mixed):
-                outputs = net(gpu.images(rows, train=True))
+                outputs = net(images)
             loss = sum(stage1_losses(tuple(o.float() for o in outputs), targets_for(rows)).values())
             optimizer.zero_grad(set_to_none=True)
             scaler.scale(loss).backward()
@@ -199,10 +233,9 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
         net.eval()
         totals = {}
         with torch.no_grad():
-            for start in range(0, len(val_rows), batch_size * 2):
-                rows = val_rows[start:start + batch_size * 2]
+            for rows, images in gpu.batches(val_rows, batch_size * 2, train=False):
                 with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=mixed):
-                    outputs = net(gpu.images(rows, train=False))
+                    outputs = net(images)
                 for task, value in stage1_losses(tuple(o.float() for o in outputs), targets_for(rows)).items():
                     totals[task] = totals.get(task, 0.0) + value.item() * len(rows)
         val = {task: total / len(val_rows) for task, total in totals.items()}
@@ -221,10 +254,9 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     rows_out = np.where(table["frame_number"].values <= describe_up_to)[0]
     summaries, probs, tools, blood = [], [], [], []
     with torch.no_grad():
-        for start in range(0, len(rows_out), batch_size * 2):
-            rows = rows_out[start:start + batch_size * 2]
+        for rows, images in gpu.batches(rows_out, batch_size * 2, train=False):
             with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=mixed):
-                s, t, b, tl = net(gpu.images(rows, train=False))
+                s, t, b, tl = net(images)
             summaries.append(s.float().cpu().numpy().astype(np.float16))
             probs.append(torch.softmax(tl.float(), 1).cpu().numpy().astype(np.float16))
             tools.append(torch.sigmoid(t.float()).cpu().numpy().astype(np.float16))
@@ -269,9 +301,11 @@ if __name__ == "__main__":
         build_cache(args.quick)
     elif args.step == "train":
         p = hemo_paths(args.quick)
-        build_cache(args.quick)
         table = pd.read_csv(p["targets"])
-        frames = np.load(p["cache"])  # whole array in memory (~4.3 GB for every frame)
+        frames = None
+        if os.environ.get("CALIBRE_LOADER", "jpeg") == "memory":
+            build_cache(args.quick)
+            frames = np.load(p["cache"])  # whole array in memory (~4.3 GB for every frame)
         jobs = encoder_jobs()
         for i in ([args.job] if args.job is not None else range(len(jobs))):
             train_encoder(table, frames, load_surgeon_folds(), args.seed, *jobs[i], args.quick)
