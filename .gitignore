@@ -26,3 +26,5 @@ data/auto_boxes_v2_low_quick/
 results/final_detectors_quick/
 results/finetune_quick/
 logs/
+data/hemosurv*/
+hemosurv_seed*_part*.zip
