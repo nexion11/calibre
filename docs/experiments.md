@@ -487,6 +487,23 @@ The two published methods that need no GPU, re-implemented from their papers and
 - Entropy did not reproduce: below chance on the whole trial and 0.54–0.68 on 60 s, versus the published 78% accuracy. Its exact definition and test split are not in the abstract, so this may partly be our reimplementation.
 - Borrowing their signals into D helped on automatic labels (+0.028 [−0.004, +0.061]) and hurt on human labels (−0.113 [−0.21, −0.03]). Not robust; not carried forward.
 
+### Full HemoSurv: with the per-second image models (before the leak checks)
+
+HemoSurv's sequence model given, each second, the 32-number summary from a stage-1 image model (ResNet-50) as well as the detected tools and blood (`calibre/experiments/hemosurv_full.py`, `results/hemosurv_full/`). Two image-model versions: taught tools, blood and time to control (25 encoders, 1 seed), or taught only tools and blood (5 encoders per seed, 3 seeds; "ensemble" averages the 3). Same 5 surgeon folds as D, 3 random starts of the sequence model.
+
+| | Failure AUC, auto / human | Gap vs D [95%], auto / human | Severe AUC, auto / human | RMSE mL, auto / human |
+|---|---|---|---|---|
+| D. B + previous attempt | 0.759 / 0.792 | | 0.804 / 0.809 | 337 / 338 |
+| **HemoSurv + prior, tools-and-blood image models (ensemble)** | **0.818 / 0.835** | **+0.060 [+0.001, +0.113] / +0.043 [−0.009, +0.095]** | 0.781 / 0.777 | 340 / 338 |
+| HemoSurv + prior, image model also taught time | 0.752 / 0.738 | −0.007 / −0.054 | 0.642 / 0.668 | 388 / 383 |
+| D + HemoSurv (tools-and-blood ensemble) | 0.768 / 0.803 | +0.009 / +0.011 | 0.823 / 0.832 | 333 / 329 |
+| DG + HemoSurv (tools-and-blood ensemble) | 0.707 / 0.733 | | 0.822 / 0.839 | 309 / 305 |
+
+- **With the tools-and-blood image models, HemoSurv on its own is the best failure predictor so far on both label sets (0.82–0.84 vs D's 0.76–0.79).** The gain is consistent in direction but borderline: the range clears 0 on automatic labels and just touches it on human labels. It is weaker than D on severe bleeds.
+- **Teaching the image model time to control made everything worse** (severe AUC 0.64–0.67). Single frames overfit the time task (see the stage-1 logs), so time is left to the sequence model.
+- Adding this HemoSurv's outputs to D no longer improves failure (+0.01), unlike the earlier video-only HemoSurv (+0.043 on automatic labels). The two results disagree and the leak checks below come first.
+- **Not yet checked:** trials shorter than 60 s (the shortest is 46 s) end with control, so their length can reveal the outcome at the 60-s landmark; track cleanup fills gaps using later seconds. Both apply to every 60-s model in this document, including the baselines. To be re-scored on trials still bleeding at each landmark, with prefix-only cleanup.
+
 ## Limitations
 
 - These are cadaver simulation trials only, with 143 trials from 73 surgeons, so the 95% ranges are wide.
