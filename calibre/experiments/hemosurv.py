@@ -126,7 +126,7 @@ class GpuBatches:
 
     def images(self, x, train):
         rows_in_batch = x.shape[0]
-        x = x.to(self.device, non_blocking=True).permute(0, 3, 1, 2).float().div_(255)
+        x = x.to(self.device, non_blocking=True).permute(0, 3, 1, 2).contiguous().float().div_(255)  # standard layout, as in Phase 4
         if train:
             flip = (torch.rand(rows_in_batch, 1, 1, 1, device=self.device) < 0.5).float()
             x = flip * x.flip(-1) + (1 - flip) * x  # no boolean indexing: avoids a GPU-to-CPU sync per batch
@@ -134,7 +134,7 @@ class GpuBatches:
             shift = torch.empty(rows_in_batch, 1, 1, 1, device=self.device).uniform_(-0.05, 0.05)
             x = (x * gain + shift).clamp_(0, 1)
         x = (x - self.mean) / self.std
-        return x.contiguous(memory_format=torch.channels_last) if channels_last else x
+        return x.contiguous(memory_format=torch.channels_last) if channels_last else x.contiguous()
 
 
 # --------------------------------------------------------------------------------------------------- stage 1
