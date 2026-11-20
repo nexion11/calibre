@@ -28,3 +28,5 @@ results/finetune_quick/
 logs/
 data/hemosurv*/
 hemosurv_seed*_part*.zip
+data/socalnet_*/
+socalnet_seed*.zip
