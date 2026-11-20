@@ -169,13 +169,13 @@ def fit_and_predict(train_ids, test_ids, inputs, prior_train, prior_test, outcom
     xt, *_ = pad(test_ids, test_inputs, outcomes, mean, std)
     with torch.no_grad():
         logits, log_rate = net(xt, prior_te)
-    failure, blood = np.zeros(len(test_ids)), np.zeros(len(test_ids))
+    failure, blood, expected_time = np.zeros(len(test_ids)), np.zeros(len(test_ids)), np.zeros(len(test_ids))
     for i, t in enumerate(test_ids):
         last = len(test_inputs[t][0]) - 1
         probs = torch.softmax(logits[i, last], 0).numpy()
-        failure[i], expected = prediction_at(probs, int(test_inputs[t][0][last]))
-        blood[i] = float(np.exp(log_rate[i, last].item() * rate_std + rate_mean)) * expected
-    return failure, blood
+        failure[i], expected_time[i] = prediction_at(probs, int(test_inputs[t][0][last]))
+        blood[i] = float(np.exp(log_rate[i, last].item() * rate_std + rate_mean)) * expected_time[i]
+    return failure, blood, expected_time
 
 
 # --------------------------------------------------------------------------------------------- evaluation
@@ -201,7 +201,7 @@ def run_variant(table, folds, inputs_for_fold, use_prior, seeds=(0, 1, 2), dense
     outcomes["tth"] = outcomes["tth"].fillna(time_limit)
     fold_of = folds.set_index("participant_id")["fold"]
     table_fold = table["participant_id"].astype(int).map(fold_of).values
-    failure, ml = np.zeros(len(table)), np.zeros(len(table))
+    failure, ml, expected_time = np.zeros(len(table)), np.zeros(len(table)), np.zeros(len(table))
     for k in range(n_folds):
         train_rows, test_rows = np.where(table_fold != k)[0], np.where(table_fold == k)[0]
         inputs = inputs_for_fold(k)
@@ -216,10 +216,11 @@ def run_variant(table, folds, inputs_for_fold, use_prior, seeds=(0, 1, 2), dense
         runs = [fit_and_predict(train_ids, test_ids, inputs, prior_train, prior_test, outcomes, seed, dense=dense) for seed in seeds]
         failure[test_rows] = np.mean([r[0] for r in runs], axis=0)
         ml[test_rows] = np.exp(np.mean([np.log(r[1]) for r in runs], axis=0))
+        expected_time[test_rows] = np.mean([r[2] for r in runs], axis=0)
         print(f"  {name} fold {k} done", flush=True)
     ranges = surgeon_bootstrap(table, ml, failure)
     summary = pd.DataFrame({"score": pd.Series(scores(table, ml, failure)), "low": ranges.loc[0.025], "high": ranges.loc[0.975]})
-    summary.attrs.update(name=name, trials=len(table), predicted_ml=ml, failure_risk=failure)
+    summary.attrs.update(name=name, trials=len(table), predicted_ml=ml, failure_risk=failure, expected_time=expected_time)
     print(f"{name}: severe {summary.loc['severe_auc', 'score']:.3f}  failure {summary.loc['failure_auc', 'score']:.3f}  "
           f"rmse {summary.loc['rmse_ml', 'score']:.0f}", flush=True)
     return summary

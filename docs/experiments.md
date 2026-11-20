@@ -415,6 +415,53 @@ A ResNet-50 (SOCALNet's backbone, ImageNet start) was fine-tuned on every second
 - The muscle task never learned. Its validation loss started at coin-flip level and rose every round, in every encoder.
 - Putting each encoder's outputs on a common percentile scale (they differ in average by up to 0.5 on a spread of about 0.7) did not help either: 0.793 / 0.551 alone, 0.820 / 0.700 with D. That check was added after seeing the first result and is reported as such.
 
+### HemoSurv, first results (video inputs, no image encoder yet)
+
+HemoSurv (`calibre/experiments/hemosurv_stage2.py`) reads the first seconds of a trial in order (detected tools and visible blood each second) and, at every second, predicts the time left until the bleed is controlled, in 11 bins, with failed trials treated as "not by 300 s". It is trained on every second up to 180 s of the training trials, not on trial totals. At 60 s it gives a failure risk (chance of no control by 300 s) and an expected time to control. Everything below is on the 5 fixed surgeon folds, 10 random starts averaged, D and DG rerun on the same folds (`calibre/experiments/next_tests.py`, numbers in `results/next_tests/`).
+
+**Adding HemoSurv's two outputs to the existing models.** The failure risk and the expected time to control are computed for every training trial by HemoSurv models that never saw that trial's surgeon (4 inner folds), and for test trials by a model trained on all training surgeons. They are added as two inputs to D and DG.
+
+| Automatic labels (cleaned) | Severe AUC | Failure AUC | RMSE mL | Gap vs D: failure / RMSE [95%] | Gap vs DG: RMSE [95%] |
+|---|---|---|---|---|---|
+| D. B + previous attempt | 0.804 | 0.759 | 337 | | |
+| DG. DINOv2 + D | 0.811 | 0.710 | 311 | | |
+| **D + HemoSurv** | 0.807 | **0.801** | 328 | **+0.043 [+0.010, +0.077] / −9 [−14, −2]** | |
+| **DG + HemoSurv** | 0.815 | 0.717 | **306** | | **−5 [−9, −0.4]** |
+| SOCALNet-style LSTM rebuild | 0.735 | 0.596 | 351 | | |
+
+| Human labels | Severe AUC | Failure AUC | RMSE mL | Gap vs D: failure / RMSE [95%] |
+|---|---|---|---|---|
+| D | 0.809 | 0.792 | 338 | |
+| D + HemoSurv | 0.808 | 0.807 | 341 | +0.015 [−0.001, +0.036] / +2 [−3, +7] |
+| DG + HemoSurv | 0.829 | 0.723 | 311 | (vs DG: +2 [−1, +5]) |
+
+- **On automatic labels, HemoSurv's outputs improve the best model on both failure and blood loss, and both ranges exclude 0.** This meets the bar set in `docs/paper_plan.md` before running ("beats D on failure AUC or blood-loss RMSE with the paired range above 0, on automatic labels").
+- **On human labels the gain is smaller and not proven** (failure +0.015, range just touching 0). So the effect is real on the setting the paper is about, but modest, and it should be confirmed with the image-encoder version.
+- Blood loss as DG's bleeding rate × HemoSurv's time did not beat DG.
+
+**HemoSurv on its own (10 starts).**
+
+| | Failure AUC, auto / human | Severe AUC, auto / human | Time-to-control C-index, auto / human |
+|---|---|---|---|
+| HemoSurv + surgeon prior | 0.798 / 0.814 | 0.723 / 0.751 | 0.687 / 0.716 |
+| HemoSurv, video only | 0.764 / 0.673 | 0.723 / 0.707 | 0.680 / 0.665 |
+| Weibull survival model on D's inputs (time only) | | | 0.706 / 0.718 |
+
+- With the surgeon prior it is level with or slightly above D on failure, but clearly weaker on severe bleeds and blood loss. Video only is still inconsistent between label sets (0.76 vs 0.67).
+- It ranks the time to control (C-index about 0.68–0.72) as well as a survival model on the hand-made inputs, not better.
+
+**Fair baselines (same folds).**
+
+| | Severe AUC, auto / human | Failure AUC, auto / human | RMSE mL, auto / human |
+|---|---|---|---|
+| SOCALNet-style LSTM rebuild | 0.735 / 0.740 | 0.596 / 0.573 | 351 / 352 |
+| LSTM + previous attempt | 0.750 / 0.730 | 0.720 / 0.704 | 357 / 354 |
+| Gradient-boosted trees on D's inputs | 0.760 / 0.748 | 0.766 / 0.807 | 355 / 360 |
+| D (ridge / logistic) | 0.804 / 0.809 | 0.759 / 0.792 | 337 / 338 |
+
+- **Giving the LSTM the previous attempt raises its failure AUC by about 0.12, but it stays below the simple model.** The information matters more than the model, and with 143 trials the simple model is the better choice.
+- Boosted trees match D on failure and are worse on severe bleeds and blood loss, so the linear model is not leaving non-linear signal on the table.
+
 ## Limitations
 
 - These are cadaver simulation trials only, with 143 trials from 73 surgeons, so the 95% ranges are wide.
