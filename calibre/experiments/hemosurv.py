@@ -197,8 +197,12 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     torch.manual_seed(seed)
     np.random.seed(seed)
     device, batch_size, mixed = device_and_settings()
-    batch_size = int(os.environ.get("CALIBRE_BATCH", batch_size + 32 if device == "cuda" else batch_size))
-    torch.backends.cudnn.benchmark = True
+    # same settings as Phase 4, which ran at ~1.2 min per round on the RTX 4060: batch 96 already fills ~6 of 8 GB,
+    # and on Windows a bigger batch silently spills into system memory and runs ~5x slower instead of erroring
+    batch_size = int(os.environ.get("CALIBRE_BATCH", batch_size))
+    torch.backends.cudnn.benchmark = os.environ.get("CALIBRE_BENCHMARK", "0") == "1"
+    print(f"device {device}, batch {batch_size}, loader {'memory' if frames is not None else 'jpeg'}, "
+          f"channels_last {channels_last}", flush=True)
     gpu = GpuBatches(device, names=table["frame"].tolist(), folder=p["small"], frames=frames)
     event_bin, first_allowed = survival_targets(table)
     targets_all = (torch.tensor(table[[f"{t}_present" for t in tool_types]].values, dtype=torch.float32),
@@ -242,6 +246,9 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
         first_val = first_val if epoch > 1 else dict(val)
         relative = float(np.mean([val[t] / max(first_val[t], 1e-9) for t in val]))
         history.append({"epoch": epoch, **val, "relative": relative, "minutes": (time.time() - started) / 60})
+        if device == "cuda" and epoch == 1:
+            print(f"GPU memory used at most: {torch.cuda.max_memory_allocated() / 1e9:.1f} GB of "
+                  f"{torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB", flush=True)
         print(f"hemosurv seed {seed} outer {outer} inner {inner} epoch {epoch}:", {k: round(v, 4) for k, v in val.items()},
               f"relative {relative:.3f}  {(time.time() - started) / 60:.1f} min", flush=True)
         if relative < best:
