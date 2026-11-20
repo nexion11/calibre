@@ -464,6 +464,29 @@ HemoSurv (`calibre/experiments/hemosurv_stage2.py`) reads the first seconds of a
 - **Giving the LSTM the previous attempt raises its failure AUC by about 0.12, but it stays below the simple model.** The information matters more than the model, and with 143 trials the simple model is the better choice.
 - Boosted trees match D on failure and are worse on severe bleeds and blood loss, so the linear model is not leaving non-linear signal on the table.
 
+### Published SOCAL methods, re-run under the same test
+
+The two published methods that need no GPU, re-implemented from their papers and scored on the same 5 surgeon folds as D (`calibre/experiments/prior_methods.py`, numbers in `results/prior_methods/`). Entropy: Kugener et al., Oper Neurosurg 2023 (https://doi.org/10.1227/ons.0000000000000888), Shannon entropy of which tools are on screen, logistic regression for success. APMs: Pangal et al., J Neurosurg 2022 (https://doi.org/10.3171/2021.10.JNS211064), 60 metrics from the tool boxes, elastic net for log blood loss. Their exact definitions are not all published, so these are reimplementations.
+
+| First 60 s (early prediction) | Failure AUC [95%], auto / human labels | Severe AUC, auto / human | RMSE mL, auto / human |
+|---|---|---|---|
+| D. B + previous attempt | 0.759 [0.68, 0.84] / 0.792 [0.72, 0.86] | 0.804 / 0.809 | 337 / 338 |
+| Entropy | 0.681 [0.59, 0.77] / 0.540 [0.44, 0.63] | (no blood-loss model) | |
+| APM elastic net | 0.466 / 0.473 | 0.639 / 0.642 | 425 / 406 |
+| D + borrowed signals (disappearances, entropy, time to muscle, no-tool share) | 0.787 / 0.679 | 0.805 / 0.793 | 339 / 343 |
+
+| Whole trial, human labels (as published) | Failure AUC [95%] | Severe AUC | RMSE mL | Accuracy |
+|---|---|---|---|---|
+| Entropy | 0.414 [0.32, 0.52] | | | 66% |
+| APM elastic net | 0.913 [0.85, 0.97] | 0.866 | 317 | 88% |
+| **Video length alone** | **0.972 [0.92, 1.00]** | 0.847 | 408 | 94% |
+
+- **In the first 60 s, both published methods are clearly below D** (failure AUC gap −0.08 to −0.32; the APM model collapses to calling everything a success).
+- **As published, on the whole trial, the APM model looks strong (failure 0.91, 88% correct), but the length of the video alone does better (0.97, 94%).** A failed trial runs to 300 s by definition, so any metric summed or counted over the whole trial (distance travelled, disappearances, frames with a tool) carries the time to control in it. Whole-trial metrics describe a trial after it is over; they are not predictions, and their accuracy is mostly the trial length. The APM paper's own baseline (trial time alone) shows the same.
+- **For blood loss, our first-60-s DG (311 mL) matches the whole-trial APM model (317 mL)** without waiting for the trial to end.
+- Entropy did not reproduce: below chance on the whole trial and 0.54–0.68 on 60 s, versus the published 78% accuracy. Its exact definition and test split are not in the abstract, so this may partly be our reimplementation.
+- Borrowing their signals into D helped on automatic labels (+0.028 [−0.004, +0.061]) and hurt on human labels (−0.113 [−0.21, −0.03]). Not robust; not carried forward.
+
 ## Limitations
 
 - These are cadaver simulation trials only, with 143 trials from 73 surgeons, so the 95% ranges are wide.
