@@ -138,11 +138,33 @@ class GpuBatches:
 
 
 # --------------------------------------------------------------------------------------------------- stage 1
+backbone_name = os.environ.get("CALIBRE_BACKBONE", "resnet50")  # resnet50 (SOCALNet's, the fair comparison) or dinov2
+
+
+class Dinov2Small(torch.nn.Module):
+    """DINOv2-small (self-supervised ViT, 22M weights, safetensors). Frames are resized to 280x154, a multiple of
+    its 14-pixel patches; the class token is the frame's summary."""
+
+    def __init__(self):
+        super().__init__()
+        from transformers import AutoModel
+        self.model = AutoModel.from_pretrained("facebook/dinov2-small", use_safetensors=True)
+        self.out_size = self.model.config.hidden_size
+
+    def forward(self, images):
+        images = torch.nn.functional.interpolate(images, size=(154, 280), mode="bilinear", align_corners=False)
+        return self.model(pixel_values=images).pooler_output
+
+
 class HemoEncoder(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.backbone = resnet50_imagenet()
-        self.summary = torch.nn.Sequential(torch.nn.Dropout(0.2), torch.nn.Linear(2048, summary_size), torch.nn.ReLU())
+        if backbone_name == "dinov2":
+            self.backbone = Dinov2Small()
+            width = self.backbone.out_size
+        else:
+            self.backbone, width = resnet50_imagenet(), 2048
+        self.summary = torch.nn.Sequential(torch.nn.Dropout(0.2), torch.nn.Linear(width, summary_size), torch.nn.ReLU())
         self.tools = torch.nn.Linear(summary_size, len(tool_types))
         self.blood = torch.nn.Linear(summary_size, 1)
         self.time_left = torch.nn.Linear(summary_size, n_bins)
@@ -172,8 +194,12 @@ def encoder_jobs():
     return [(k, None) for k in range(n_folds)] + [(k, j) for k in range(n_folds) for j in range(n_folds) if j != k]
 
 
+def seed_folder(p, seed):
+    return f"{p['out']}/seed{seed}" if backbone_name == "resnet50" else f"{p['out']}/{backbone_name}_seed{seed}"
+
+
 def encoder_file(p, seed, outer, inner):
-    return f"{p['out']}/seed{seed}/outer{outer}_inner{'x' if inner is None else inner}.npz"
+    return f"{seed_folder(p, seed)}/outer{outer}_inner{'x' if inner is None else inner}.npz"
 
 
 def train_encoder(table, frames, folds, seed, outer, inner, quick):
@@ -201,7 +227,7 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     # and on Windows a bigger batch silently spills into system memory and runs ~5x slower instead of erroring
     batch_size = int(os.environ.get("CALIBRE_BATCH", batch_size))
     torch.backends.cudnn.benchmark = os.environ.get("CALIBRE_BENCHMARK", "0") == "1"
-    print(f"device {device}, batch {batch_size}, loader {'memory' if frames is not None else 'jpeg'}, "
+    print(f"backbone {backbone_name}, device {device}, batch {batch_size}, loader {'memory' if frames is not None else 'jpeg'}, "
           f"channels_last {channels_last}", flush=True)
     gpu = GpuBatches(device, names=table["frame"].tolist(), folder=p["small"], frames=frames)
     event_bin, first_allowed = survival_targets(table)
@@ -216,11 +242,12 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     if channels_last:
         net = net.to(memory_format=torch.channels_last)
     heads = [*net.summary.parameters(), *net.tools.parameters(), *net.blood.parameters(), *net.time_left.parameters()]
-    groups = [{"params": heads, "lr": 1e-3}, {"params": net.backbone.parameters(), "lr": 1e-4}]
+    backbone_lr = 2e-5 if backbone_name == "dinov2" else 1e-4  # transformers fine-tune best with a smaller step
+    groups = [{"params": heads, "lr": 1e-3}, {"params": net.backbone.parameters(), "lr": backbone_lr}]
     optimizer = torch.optim.AdamW(groups, weight_decay=1e-4)
     epochs = 1 if quick else 6
     steps = len(fit_rows) // batch_size
-    schedule = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=[1e-3, 1e-4], total_steps=epochs * steps, pct_start=0.15)
+    schedule = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=[1e-3, backbone_lr], total_steps=epochs * steps, pct_start=0.15)
     scaler = torch.amp.GradScaler("cuda", enabled=mixed)
     best, best_state, best_epoch, first_val, history, started = np.inf, None, 0, None, [], time.time()
     for epoch in range(1, epochs + 1):
@@ -281,20 +308,21 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
 def pack(seed, quick, limit_mb=9):
     """Zip one seed's encoder outputs into parts small enough to download from Drive."""
     p = hemo_paths(quick)
-    files = sorted(os.listdir(f"{p['out']}/seed{seed}"))
+    folder = seed_folder(p, seed)
+    files = sorted(os.listdir(folder))
     part, size, zipped = 0, 0, None
     for name in files:
-        path = f"{p['out']}/seed{seed}/{name}"
+        path = f"{folder}/{name}"
         if zipped is None or size + os.path.getsize(path) > limit_mb * 1e6:
             if zipped:
                 zipped.close()
             part, size = part + 1, 0
-            zipped = zipfile.ZipFile(f"hemosurv_seed{seed}_part{part}.zip", "w", zipfile.ZIP_STORED)
+            zipped = zipfile.ZipFile(f"hemosurv_{os.path.basename(folder)}_part{part}.zip", "w", zipfile.ZIP_STORED)
         zipped.write(path, name)
         size += os.path.getsize(path)
     if zipped:
         zipped.close()
-    print(f"{len(files)} files in {part} zip parts: hemosurv_seed{seed}_part1..{part}.zip")
+    print(f"{len(files)} files in {part} zip parts: hemosurv_{os.path.basename(folder)}_part1..{part}.zip")
 
 
 if __name__ == "__main__":
