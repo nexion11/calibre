@@ -182,20 +182,29 @@ def censored_bin_nll(logits, event_bin, first_allowed):
     return -torch.logsumexp(log_p.masked_fill(~allowed, -1e4), dim=1).mean()
 
 
+# CALIBRE_TIME_TASK=0: the image model learns only what is on screen (tools, blood). It then never sees an outcome,
+# so no encoder can leak one: 5 encoders per seed instead of 25, and time to control is left to stage 2's sequence model.
+learn_time = os.environ.get("CALIBRE_TIME_TASK", "1") == "1"
+
+
 def stage1_losses(outputs, targets):
     _, tools, blood, time_left = outputs
     tool_truth, blood_truth, event_bin, first_allowed = targets
-    return {"tools": torch.nn.functional.binary_cross_entropy_with_logits(tools, tool_truth),
-            "blood": torch.nn.functional.smooth_l1_loss(blood, blood_truth * 4) / 4,
-            "time": censored_bin_nll(time_left, event_bin, first_allowed)}
+    parts = {"tools": torch.nn.functional.binary_cross_entropy_with_logits(tools, tool_truth),
+             "blood": torch.nn.functional.smooth_l1_loss(blood, blood_truth * 4) / 4}
+    if learn_time:
+        parts["time"] = censored_bin_nll(time_left, event_bin, first_allowed)
+    return parts
 
 
 def encoder_jobs():
-    return [(k, None) for k in range(n_folds)] + [(k, j) for k in range(n_folds) for j in range(n_folds) if j != k]
+    outer = [(k, None) for k in range(n_folds)]
+    return outer + [(k, j) for k in range(n_folds) for j in range(n_folds) if j != k] if learn_time else outer
 
 
 def seed_folder(p, seed):
-    return f"{p['out']}/seed{seed}" if backbone_name == "resnet50" else f"{p['out']}/{backbone_name}_seed{seed}"
+    tag = ("" if backbone_name == "resnet50" else f"{backbone_name}_") + ("" if learn_time else "notime_")
+    return f"{p['out']}/{tag}seed{seed}"
 
 
 def encoder_file(p, seed, outer, inner):
@@ -227,7 +236,7 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     # and on Windows a bigger batch silently spills into system memory and runs ~5x slower instead of erroring
     batch_size = int(os.environ.get("CALIBRE_BATCH", batch_size))
     torch.backends.cudnn.benchmark = os.environ.get("CALIBRE_BENCHMARK", "0") == "1"
-    print(f"backbone {backbone_name}, device {device}, batch {batch_size}, loader {'memory' if frames is not None else 'jpeg'}, "
+    print(f"time task {'on' if learn_time else 'off'}, backbone {backbone_name}, device {device}, batch {batch_size}, loader {'memory' if frames is not None else 'jpeg'}, "
           f"channels_last {channels_last}", flush=True)
     gpu = GpuBatches(device, names=table["frame"].tolist(), folder=p["small"], frames=frames)
     event_bin, first_allowed = survival_targets(table)
@@ -280,8 +289,9 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
         print(f"hemosurv seed {seed} outer {outer} inner {inner} epoch {epoch}:", {k: round(v, 4) for k, v in val.items()},
               f"relative {relative:.3f}  {(time.time() - started) / 60:.1f} min", flush=True)
         # keep the round where time to control is best on the check surgeons: it is the task HemoSurv is built on
-        if val["time"] < best:
-            best, best_epoch = val["time"], epoch
+        score = val["time"] if learn_time else relative  # without the time task: best average of tools and blood
+        if score < best:
+            best, best_epoch = score, epoch
             best_state = {k: v.detach().clone() for k, v in net.state_dict().items()}
     net.load_state_dict(best_state)
     print(f"kept round {best_epoch}", flush=True)
