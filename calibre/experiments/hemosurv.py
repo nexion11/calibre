@@ -245,7 +245,8 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
     backbone_lr = 2e-5 if backbone_name == "dinov2" else 1e-4  # transformers fine-tune best with a smaller step
     groups = [{"params": heads, "lr": 1e-3}, {"params": net.backbone.parameters(), "lr": backbone_lr}]
     optimizer = torch.optim.AdamW(groups, weight_decay=1e-4)
-    epochs = 1 if quick else 6
+    # the time-to-control task overfits after round 1-2 on the check surgeons (first full run: 1.30, 1.49, 1.75, 2.28)
+    epochs = 1 if quick else int(os.environ.get("CALIBRE_EPOCHS", "3"))
     steps = len(fit_rows) // batch_size
     schedule = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=[1e-3, backbone_lr], total_steps=epochs * steps, pct_start=0.15)
     scaler = torch.amp.GradScaler("cuda", enabled=mixed)
@@ -278,8 +279,9 @@ def train_encoder(table, frames, folds, seed, outer, inner, quick):
                   f"{torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB", flush=True)
         print(f"hemosurv seed {seed} outer {outer} inner {inner} epoch {epoch}:", {k: round(v, 4) for k, v in val.items()},
               f"relative {relative:.3f}  {(time.time() - started) / 60:.1f} min", flush=True)
-        if relative < best:
-            best, best_epoch = relative, epoch
+        # keep the round where time to control is best on the check surgeons: it is the task HemoSurv is built on
+        if val["time"] < best:
+            best, best_epoch = val["time"], epoch
             best_state = {k: v.detach().clone() for k, v in net.state_dict().items()}
     net.load_state_dict(best_state)
     print(f"kept round {best_epoch}", flush=True)
