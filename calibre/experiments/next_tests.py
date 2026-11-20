@@ -70,8 +70,10 @@ def hemosurv_outputs(table, folds, inputs, use_prior, seeds):
     tf = table["participant_id"].astype(int).map(fold_of).values
     by_fold = {}
 
-    def fit(train_rows, test_rows):
-        train_ids = table["trial_id"].iloc[train_rows].tolist()
+    def fit(train_rows, test_rows, inputs):
+        train_ids = [t for t in table["trial_id"].iloc[train_rows].tolist() if t in inputs]
+        if len(train_ids) < len(train_rows):  # keep the prior rows lined up with the trials that have inputs
+            train_rows = np.array([r for r in train_rows if table["trial_id"].iloc[r] in inputs])
         test_ids = table["trial_id"].iloc[test_rows].tolist()
         if use_prior:
             prior_train, prior_test = hs.surgeon_prior_columns(table, train_rows, test_rows)
@@ -83,11 +85,12 @@ def hemosurv_outputs(table, folds, inputs, use_prior, seeds):
         return pd.DataFrame({"hs_failure_logit": np.log(failure / (1 - failure)), "hs_log_time": np.log(expected)}, index=test_ids)
 
     for k in range(n_folds):
+        fold_inputs = inputs(k) if callable(inputs) else inputs  # image-model inputs depend on the outer fold
         train_rows, test_rows = np.where(tf != k)[0], np.where(tf == k)[0]
-        parts = [fit(train_rows, test_rows)]
+        parts = [fit(train_rows, test_rows, fold_inputs)]
         inner = GroupKFold(4).split(train_rows, groups=table["participant_id"].iloc[train_rows])
         for fit_idx, held_idx in inner:
-            parts.append(fit(train_rows[fit_idx], train_rows[held_idx]))
+            parts.append(fit(train_rows[fit_idx], train_rows[held_idx], fold_inputs))
         by_fold[k] = pd.concat(parts)
         print(f"  cross-fitted HemoSurv outputs, fold {k}", flush=True)
     return by_fold
