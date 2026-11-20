@@ -79,6 +79,8 @@ Rerun with `uv run python -m calibre.experiments.phase1`. Numbers are in `result
 
 ### 1.1 Why SOCALNet's R² of 0.74 cannot be compared with ours
 
+> **Correction (2026-11-20).** SOCALNet's Supplementary Figure 1 is a correlation matrix in which the model-to-truth cell is 0.74 (experts 0.65–0.74). So the published 0.74 is a **Pearson correlation r**, not an R², which makes their R² about 0.55. The fair comparison is our median correlation on 20-video test sets: the squared correlations below (0.41–0.45 for DG) are r ≈ 0.64–0.67, so we are still below 0.74, but much closer than the R² analysis in this section suggests. The spread argument below applies to an R² of 0.74 and does not apply to an r of 0.74. The supplement also contains no model code ("eSupp1" is not in it).
+
 R² (as 1 − error/variance) and RMSE together fix how spread out the test videos' blood loss must be. An R² of 0.74 at an RMSE of 295 mL needs a spread (standard deviation) of 579 mL. We drew 10,000 test sets of 20 videos from our 143 trials, both at random and the way SOCALNet's was built (11 controlled, 9 failed).
 
 | 20-video test set | Spread of blood loss, 5th / median / 95th percentile | Sets with a spread of 579 mL or more | R² that an RMSE of 295 mL gives on the median set |
