@@ -124,5 +124,7 @@ if __name__ == "__main__":
         rows.append(row)
     out = pd.DataFrame(rows)
     os.makedirs(out_dir, exist_ok=True)
-    out.to_csv(f"{out_dir}/{labels}.csv", index=False)
+    risk = os.environ.get("CALIBRE_AT_RISK")
+    root_tag = "" if root == "data/hemosurv" else "_" + os.path.basename(root.rstrip("/"))
+    out.to_csv(f"{out_dir}/{labels}{'_atrisk' + risk if risk else ''}{root_tag}.csv", index=False)
     print(out[["method", "severe_auc", "failure_auc", "rmse_ml"]].round(3).to_string(index=False))

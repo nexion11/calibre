@@ -11,7 +11,8 @@ auto_boxes_file = "data/auto_boxes.csv"  # from calibre/experiments/fold_detecto
 clean_boxes_file = "data/auto_boxes_clean.csv"  # the same, with tracks cleaned up (calibre/experiments/track_cleanup.py)
 auto2_boxes_file = "data/auto_boxes_v2.csv"  # Part C: final detectors (final_detectors.py), app cutoff
 clean2_boxes_file = "data/auto_boxes_v2_clean.csv"  # the same, tracks cleaned (track_cleanup.py tune --v2)
-boxes_files = {"human": human_boxes_file, "auto": auto_boxes_file, "clean": clean_boxes_file,
+cleanpre_boxes_file = "data/auto_boxes_clean_prefix60.csv"  # cleanup that only sees seconds up to 60 (validity_checks.py)
+boxes_files = {"human": human_boxes_file, "auto": auto_boxes_file, "clean": clean_boxes_file, "cleanpre60": cleanpre_boxes_file,
                "auto2": auto2_boxes_file, "clean2": clean2_boxes_file}
 
 

@@ -504,6 +504,53 @@ HemoSurv's sequence model given, each second, the 32-number summary from a stage
 - Adding this HemoSurv's outputs to D no longer improves failure (+0.01), unlike the earlier video-only HemoSurv (+0.043 on automatic labels). The two results disagree and the leak checks below come first.
 - **Not yet checked:** trials shorter than 60 s (the shortest is 46 s) end with control, so their length can reveal the outcome at the 60-s landmark; track cleanup fills gaps using later seconds. Both apply to every 60-s model in this document, including the baselines. To be re-scored on trials still bleeding at each landmark, with prefix-only cleanup.
 
+### Leak checks, faithful SOCALNet, and DINOv2 HemoSurv (2026-11-20)
+
+Same 5 surgeon folds throughout. "At risk at 60 s" drops the 10 successful trials already controlled by 60 s (143 → 133 trials, all 49 failures kept), so trial length can no longer give the outcome away (`CALIBRE_AT_RISK=60`). Code: `calibre/experiments/validity_checks.py`, `socalnet_faithful.py`, `hemosurv_full.py`. Results: `results/validity/`, `results/socalnet_faithful/`, `results/hemosurv_full/*_atrisk60*.csv`, `*_hemosurv_dinov2_only.csv`.
+
+**1. Track cleanup that only sees the first 60 s changes nothing.** D failure AUC 0.758 with prefix-only cleanup vs 0.759 with full cleanup (automatic labels).
+
+**2. D survives the at-risk check; the earlier video-only HemoSurv gain did not.** D failure AUC at risk: 0.760 automatic / 0.755 human (vs 0.759 / 0.792 on all trials). The +0.043 that video-only HemoSurv added to D disappears at risk (0.738 vs 0.760), so it was most likely the short-trial leak.
+
+**3. HemoSurv with the tools-and-blood image models gets stronger at risk, not weaker.**
+
+| Failure AUC, automatic / human | All trials | Gap vs D [95%] | At risk at 60 s | Gap vs D [95%] |
+|---|---|---|---|---|
+| D. B + previous attempt | 0.759 / 0.792 | | 0.760 / 0.755 | |
+| HemoSurv, ResNet-50 image models (3 seeds) | 0.818 / 0.835 | +0.060 [+0.001, +0.113] / +0.043 [−0.009, +0.095] | **0.856 / 0.871** | **+0.095 [+0.038, +0.156] / +0.116 [+0.047, +0.187]** |
+| HemoSurv, DINOv2 image models (2 seeds) | 0.830 / 0.809 | +0.072 [+0.012, +0.135] / +0.017 [−0.049, +0.084] | **0.832 / 0.863** | **+0.071 [+0.006, +0.135] / +0.108 [+0.037, +0.179]** |
+
+- At risk, every HemoSurv range clears 0 on both label sets. This is the cleanest test we have and the strongest result so far.
+- Severe-bleed AUC is about the same as D (at risk 0.79–0.81 vs 0.79). DINOv2 lowers blood-loss error at risk (303 / 308 mL vs D's 340 / 346; gap −37 [−80, +15], not significant). ResNet does not (321 / 327).
+- Adding HemoSurv's outputs to D or DG still does not help failure; HemoSurv works as a model on its own, not as two extra inputs.
+- DINOv2 seed 2 has not been uploaded yet; the DINOv2 rows average 2 seeds.
+
+**4. Faithful SOCALNet and the frames-only network (Kugener 2022), re-run on our folds** (3 seeds averaged; their 8 tool flags are human labels in both columns, so only D changes between columns):
+
+| | Failure AUC | Severe AUC | RMSE mL | Accuracy | Pearson r | D minus this, failure AUC [95%], automatic / human |
+|---|---|---|---|---|---|---|
+| D. B + previous attempt | 0.759 / 0.792 | 0.804 / 0.809 | 337 / 338 | 0.71 / 0.75 | 0.57 / 0.56 | |
+| SOCALNet, faithful (4 values + 8 human tool flags) | 0.713 | 0.768 | 333 | 0.73 | 0.55 | +0.045 [−0.060, +0.160] / +0.078 [−0.018, +0.182] |
+| SOCALNet with our automatic tool flags | 0.715 | 0.757 | 337 | 0.66 | 0.54 | +0.043 [−0.060, +0.150] / +0.077 [−0.020, +0.177] |
+| Frames only (Kugener 2022 automated) | 0.680 | 0.772 | 346 | 0.69 | 0.51 | +0.078 [−0.026, +0.189] / **+0.111 [+0.012, +0.222]** |
+
+- On the same fair test SOCALNet scores 0.71 failure AUC and 73% accuracy, far from the 85% of its single 20-video test. D is ahead on failure and severe AUC but not significantly; blood-loss RMSE is the same.
+- HemoSurv vs SOCALNet was not compared paired yet (SOCALNet's per-trial predictions are not saved, and SOCALNet has not been scored at risk). The difference in point estimates is about +0.1 to +0.15 failure AUC.
+- Caveat: HemoSurv and D use the surgeon's previous attempt; SOCALNet does not. A matched-information comparison (HemoSurv without the prior, or SOCALNet with it) is still to run.
+
+**5. What the previous attempt really adds.**
+
+| Automatic labels | All trials | At risk at 60 s |
+|---|---|---|
+| D minus B, failure AUC | +0.221 [+0.122, +0.326] | +0.124 [+0.038, +0.210] |
+| B + attempt number only, minus B | +0.194 [+0.097, +0.295] | +0.088 [+0.003, +0.172] |
+| D with previous attempt shuffled within cohort (20 runs) | 0.755 (D 0.759) | 0.754 (D 0.760) |
+| Second attempts only, D minus B, failure AUC (9 failures) | +0.031 [−0.135, +0.193] | −0.017 [−0.212, +0.134] |
+| Second attempts only, D minus B, severe AUC | **+0.089 [+0.008, +0.187]** | +0.086 [−0.020, +0.199] |
+
+- For failure, almost all of the previous-attempt gain is the attempt number (a second attempt, after coaching, rarely fails): shuffling the previous outcome between surgeons leaves D unchanged.
+- The surgeon's own previous blood loss predicts a severe bleed on the second attempt on all trials, but at risk the range touches 0 (and is smaller on human labels, +0.048 [−0.072, +0.160]). Report it as suggestive, not as a main result.
+
 ## Limitations
 
 - These are cadaver simulation trials only, with 143 trials from 73 surgeons, so the 95% ranges are wide.

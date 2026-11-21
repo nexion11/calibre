@@ -155,7 +155,8 @@ def report(table, results, file):
         rows.append(row)
     out = pd.DataFrame(rows)
     os.makedirs(out_dir, exist_ok=True)
-    out.to_csv(f"{out_dir}/{labels}_{file}.csv", index=False)
+    risk = os.environ.get("CALIBRE_AT_RISK")
+    out.to_csv(f"{out_dir}/{labels}_{file}{'_atrisk' + risk if risk else ''}.csv", index=False)
     show = ["method", "severe_auc", "failure_auc", "rmse_ml"] + (["time_c_index"] if "time_c_index" in out else [])
     print(out[show].round(3).to_string(index=False), flush=True)
 

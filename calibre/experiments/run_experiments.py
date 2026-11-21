@@ -27,7 +27,11 @@ last_attempt = ["second_attempt", "last_attempt_log_blood_loss", "last_attempt_c
 def build_table(boxes_file, watch_seconds=60):
     table = load_table(boxes_file, watch_seconds)
     table = add_new_features(table, boxes_file, watch_seconds)
-    return add_surgeon_features(add_outcome_times(table))
+    table = add_surgeon_features(add_outcome_times(table))
+    at_risk = os.environ.get("CALIBRE_AT_RISK")  # e.g. 60: keep only trials still bleeding at 60 s
+    if at_risk:  # a trial already controlled by then has a known outcome and a shorter video, which can leak it
+        table = table[~((table["success"] == 1) & (table["tth"] <= float(at_risk)))].reset_index(drop=True)
+    return table
 
 
 def tabular_methods():
